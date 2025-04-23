@@ -19,9 +19,9 @@ Route::get('/', function () {
 });
 
 // Admin-only
-Route::middleware(['auth','role:admin'])->get('/admin', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+// Route::middleware(['auth','role:admin'])->get('/admin', function () {
+//     return view('admin.dashboard');
+// })->name('admin.dashboard');
 
 // User-only
 Route::middleware(['auth','role:user'])->get('/user', function () {

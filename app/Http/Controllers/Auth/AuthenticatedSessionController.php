@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
 
         // Redirect berdasarkan role
         if ($user->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('filament.admin.pages.dashboard'));
         }
 
         return redirect()->intended(route('user.dashboard'));
