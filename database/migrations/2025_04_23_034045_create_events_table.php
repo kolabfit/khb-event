@@ -25,6 +25,7 @@ return new class extends Migration {
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected'])
                 ->default('draft');
             $table->timestamps();
+            $table->string('thumbnail', 255);
         });
     }
 

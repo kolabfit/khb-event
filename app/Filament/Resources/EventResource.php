@@ -64,6 +64,12 @@ class EventResource extends Resource
                     ->label('Selesai Tanggal & Waktu')
                     ->nullable(),
 
+                Forms\Components\FileUpload::make('thumbnail')
+                    ->label('Thumbnail')
+                    ->image()
+                    ->imagePreviewHeight('200')
+                    ->required(),
+
                 Forms\Components\TextInput::make('quota')
                     ->label('Kuota Tiket')
                     ->required()
@@ -89,6 +95,10 @@ class EventResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->label('Thumbnail')
+                    ->extraAttributes(['class' => 'px-4 py-2 text-sm']),
+
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()

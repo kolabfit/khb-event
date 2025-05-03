@@ -19,6 +19,7 @@ class Event extends Model
         'end_date',
         'quota',
         'status',
+        'thumbnail',
     ];
 
     public function user()
