@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EventCards = () => {
+const EventCards = ({ dataevent }) => {
   const events = [
     {
       id: 1,
@@ -91,7 +91,7 @@ const EventCards = () => {
 
   return (
     <>
-      {events.map((event) => (
+      {dataevent.map((event) => (
         // Card wrapper: rounded & overflow-hidden, tanpa padding
         <div
           key={event.id}
@@ -100,7 +100,7 @@ const EventCards = () => {
           {/* Gambar full‐width, membulat di atas */}
           <div className="relative">
             <img
-              src={event.image}
+              src={event.thumbnail}
               alt={event.title}
               className="w-full h-62 object-cover group-hover:scale-105 transition-transform"
             />
@@ -110,13 +110,21 @@ const EventCards = () => {
           {/* Konten: beri padding di sini */}
           <div className="p-4 flex flex-col">
             <div className="self-start inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full mb-2">
-              {event.date}
+              {new Date(event.start_date).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              })}
             </div>
             <h3 className="font-bold text-base leading-tight group-hover:text-green-600 transition-colors">
               {event.title}
             </h3>
             <p className="text-sm text-gray-600 mt-1">{event.location}</p>
-            <p className="font-medium mt-1 mb-2">{event.price}</p>
+            <p className="font-medium mt-1 mb-2">{new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+              minimumFractionDigits: 0,
+            }).format(event.price)}</p>
 
             {/* Garis Pemisah */}
             <div className="my-3 border-t border-gray-200" />
@@ -124,11 +132,11 @@ const EventCards = () => {
             {/* Organizer (EO) */}
             <div className="flex items-center mt-2 mb-2">
               <img
-                src={event.organizerImage}
-                alt={event.organizerName}
+                // src={event.organizerImage}
+                alt={event.user.name}
                 className="w-7 h-7 rounded-full object-cover"
               />
-              <span className="ml-2 text-sm text-gray-700">{event.organizerName}</span>
+              <span className="ml-2 text-sm text-gray-700">{event.user.name}</span>
             </div>
 
             {/* <button

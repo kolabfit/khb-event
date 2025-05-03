@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Event extends Model
 {
@@ -39,5 +40,14 @@ class Event extends Model
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function getThumbnailAttribute(): string
+    {
+        // Jika kamu menyimpan di storage/app/public/…
+        // akan jadi: https://your-app.com/storage/namafile.jpg
+        return Storage::url($this->attributes['thumbnail']);
+        // atau, kalau di direktori public/images:
+        // return asset($this->attributes['image']);
     }
 }

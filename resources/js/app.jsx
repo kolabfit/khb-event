@@ -1,22 +1,21 @@
-// resources/js/App.jsx
-import React from 'react';
-import Navbar from './components/Navbar';
-import HeroSection from './components/HeroSection';
-import Timer from './components/Timer';
-import EventPopuler from './components/EventPopuler';
-import EventCards from './components/EventCard';
-import EventPage from './components/EventPage';
-import EventTips from './components/EventTips';
-import Footer from './components/Footer';
+import './bootstrap';
+import '../css/app.css';
 
-export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <HeroSection />
-      {/* <Timer /> */}
-      <EventPage />
-      <Footer />
-    </div>
-  );
-}
+import { createRoot } from 'react-dom/client';
+import { createInertiaApp } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+createInertiaApp({
+    title: (title) => `${title} - ${appName}`,
+    resolve: (name) => resolvePageComponent(`./Pages/${name}.jsx`, import.meta.glob('./Pages/**/*.jsx')),
+    setup({ el, App, props }) {
+        const root = createRoot(el);
+
+        root.render(<App {...props} />);
+    },
+    progress: {
+        color: '#4B5563',
+    },
+});
