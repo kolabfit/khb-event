@@ -40,4 +40,10 @@ class Event extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    public function recalculateQuota(): void
+    {
+        $total = $this->ticketTypes()->sum('quota');
+        $this->update(['quota' => $total]);
+    }
 }

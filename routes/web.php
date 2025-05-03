@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\ReportExportController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -24,11 +27,25 @@ Route::get('/', function () {
 // })->name('admin.dashboard');
 
 // User-only
-Route::middleware(['auth','role:user'])->get('/user', function () {
+Route::middleware(['auth', 'role:user'])->get('/user', function () {
     return view('user.dashboard');
 })->name('user.dashboard');
 
 
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')               // atau sesuai prefix Filament-mu
+    ->group(function () {
+        Route::get(
+            '/tickets/{ticket}/download',
+            [TicketController::class, 'download']
+        )
+            ->name('tickets.download');
+    });
+
+Route::get('/filament/reports/export', [ReportExportController::class, 'export'])
+    ->middleware(['auth'])   // sesuaikan middleware Filament Anda
+    ->name('report.export');
 
 
 Route::get('/dashboard', function () {
