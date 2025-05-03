@@ -14,8 +14,9 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <HeroSection />
-      <Timer />
+      {/* <Timer /> */}
       <EventPage />
+      <Footer />
     </div>
   );
 }
