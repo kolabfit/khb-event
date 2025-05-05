@@ -18,9 +18,13 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+
+        if ($request->routeIs('filament.admin.settings')) {
+            return view('profile.adminedit', compact('user')); // Tampilkan adminedit.blade.php
+        }
+
+        return view('profile.edit', compact('user')); // Tampilkan edit.blade.php untuk user biasa
     }
 
     /**
