@@ -12,6 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\IconColumn;
+use Guava\FilamentIconPicker\Forms\IconPicker;
+
+
+
 
 class CategoryResource extends Resource
 {
@@ -29,6 +34,10 @@ class CategoryResource extends Resource
                 Forms\Components\TextInput::make('slug')
                     ->required()
                     ->maxLength(100),
+                IconPicker::make('icon')
+                    ->label('Ikon')
+                    ->required()
+                    ->extraAttributes(['style' => 'color: #10B981;']),
             ]);
     }
 
@@ -36,6 +45,10 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
+                IconColumn::make('icon')
+                    ->label('Icon')
+                    ->size('lg')
+                    ->extraAttributes(['style' => 'color: #FFFFFF;']),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('slug')

@@ -26,6 +26,7 @@ return new class extends Migration {
                 ->default('draft');
             $table->timestamps();
             $table->string('thumbnail', 255);
+            $table->integer('price');
         });
     }
 

@@ -12,23 +12,25 @@ use Filament\Forms\Form as FilamentForm;
 use Filament\Resources\Resource;
 use Filament\Tables\Table as FilamentTable;
 use Filament\Tables;
+use Filament\Forms\Components\RichEditor;
+
 
 
 class EventResource extends Resource
 {
     protected static ?string $model = Event::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-calendar';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationGroup = 'Event Management';
     protected static ?string $navigationLabel = 'Events';
-    protected static ?int    $navigationSort  = 1;
+    protected static ?int $navigationSort = 1;
 
-    public static function form(FilamentForm  $form): FilamentForm
+    public static function form(FilamentForm $form): FilamentForm
     {
         return $form
             ->schema([
                 // Auto-assign user_id based on logged-in user
                 Hidden::make('user_id')
-                    ->default(fn () => auth()->id()),
+                    ->default(fn() => auth()->id()),
 
                 Forms\Components\TextInput::make('title')
                     ->label('Judul Event')
@@ -44,12 +46,32 @@ class EventResource extends Resource
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
                     ->reactive()
-                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', \Str::slug($state))),
+                    ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Str::slug($state))),
 
-                Forms\Components\Textarea::make('description')
+                Forms\Components\FileUpload::make('thumbnail')
+                    ->label('Thumbnail')
+                    ->image()
+                    ->imagePreviewHeight('200')
+                    ->required(),
+
+                RichEditor::make('description')
                     ->label('Deskripsi')
                     ->required()
-                    ->extraAttributes(['class' => 'bg-gray-50']),
+                    ->columnSpanFull()  // full-width
+                    ->toolbarButtons([  // sesuaikan tombol toolbar
+                        'bold',
+                        'italic',
+                        'underline',
+                        'link',
+                        'bulletList',
+                        'numberList',
+                        'blockquote',
+                        'codeBlock',
+                        'attachFiles',
+                    ])
+                    ->extraAttributes([
+                        'style' => 'min-height:250px;',  // minimal tinggi 250px
+                    ]),
 
                 Forms\Components\TextInput::make('location')
                     ->label('Lokasi')
@@ -64,26 +86,25 @@ class EventResource extends Resource
                     ->label('Selesai Tanggal & Waktu')
                     ->nullable(),
 
-                Forms\Components\FileUpload::make('thumbnail')
-                    ->label('Thumbnail')
-                    ->image()
-                    ->imagePreviewHeight('200')
-                    ->required(),
-
                 Forms\Components\TextInput::make('quota')
                     ->label('Kuota Tiket')
                     ->required()
                     ->numeric(),
 
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'draft'    => 'Draft',
-                        'pending'  => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                    ])
-                    ->default('pending'),
+                Forms\Components\TextInput::make('price')
+                    ->label('Harga Tiket')
+                    ->required()
+                    ->numeric(),
+                    
+                // Forms\Components\Select::make('status')
+                //     ->label('Status')
+                //     ->options([
+                //         'draft' => 'Draft',
+                //         'pending' => 'Pending',
+                //         'approved' => 'Approved',
+                //         'rejected' => 'Rejected',
+                //     ])
+                //     ->default('pending'),
 
                 Forms\Components\MultiSelect::make('categories')
                     ->label('Kategori')
@@ -115,29 +136,20 @@ class EventResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
-                    ->label('Status')
-                    ->colors([
-                        'khb-purple' => 'draft',
-                        'yellow'     => 'pending',
-                        'green'      => 'approved',
-                        'red'        => 'rejected',
-                    ])
-                    ->extraAttributes(['class' => 'uppercase text-xs']),
+                // Tables\Columns\BadgeColumn::make('status')
+                //     ->label('Status')
+                //     ->colors([
+                //         'khb-purple' => 'draft',
+                //         'yellow'     => 'pending',
+                //         'green'      => 'approved',
+                //         'red'        => 'rejected',
+                //     ])
+                //     ->extraAttributes(['class' => 'uppercase text-xs']),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y')
                     ->sortable(),
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'draft'    => 'Draft',
-                        'pending'  => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -152,21 +164,12 @@ class EventResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            // Contoh Relation Manager
-            // RelationManagers\TicketsRelationManager::class,
-            TicketTypesRelationManager::class,
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListEvents::route('/'),
+            'index' => Pages\ListEvents::route('/'),
             'create' => Pages\CreateEvent::route('/create'),
-            'edit'   => Pages\EditEvent::route('/{record}/edit'),
+            'edit' => Pages\EditEvent::route('/{record}/edit'),
         ];
     }
 }

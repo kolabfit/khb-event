@@ -8,6 +8,8 @@ use App\Filament\Widgets\TicketSalesChart;
 use App\Filament\Widgets\PendingItemsTable;
 use Filament\Widgets\Widget; 
 use App\Filament\Widgets\TicketSalesWidget;
+use App\Filament\Widgets\TopEventsWidget; // ← import
+
 
 class Dashboard extends BasePage
 {
@@ -26,9 +28,9 @@ class Dashboard extends BasePage
         return [
             StatsOverview::class,
             TicketSalesChart::class,
-            PendingItemsTable::class,
+            // PendingItemsTable::class,
             // TicketSalesWidget::class,
-            
+            TopEventsWidget::class,
         ];
     }
 

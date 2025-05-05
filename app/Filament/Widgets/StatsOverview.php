@@ -11,56 +11,31 @@ use App\Models\Payment;
 
 class StatsOverview extends StatsOverviewWidget
 {
+    // Tampilkan 4 kartu per baris
+    protected static int|array $columns = 4;
 
     protected function getCards(): array
     {
-        // Hitung event berdasarkan status
-        $draftCount     = Event::where('status', 'draft')->count();
-        $pendingCount   = Event::where('status', 'pending')->count();
-        $approvedCount  = Event::where('status', 'approved')->count();
-        $rejectedCount  = Event::where('status', 'rejected')->count();
+        $totalEvents  = Event::count();
+        $totalUsers   = User::count();
+        $ticketsSold  = Ticket::where('status', 'paid')->count();
+        $totalRevenue = Payment::where('status', 'paid')->sum('amount');
 
-        // Statistik pengguna (EO & User)
-        $totalUsers     = User::count();
-
-        // Statistik tiket
-        $ticketsSold    = Ticket::where('status', 'paid')->count();
-
-        // Pendapatan
-        $totalRevenue   = Payment::where('status', 'paid')->sum('amount');
-        $formattedRev   = number_format($totalRevenue, 0, ',', '.');
-
-        // Event terlaris (berdasarkan jumlah tickets)
-        $topEvent = Event::withCount('tickets')
-            ->orderBy('tickets_count', 'desc')
-            ->first();
-        $topCount = $topEvent?->tickets_count ?? 0;
-        $topTitle = $topEvent?->title        ?? '-';
+        // Format Rupiah
+        $formattedRevenue = 'Rp ' . number_format($totalRevenue, 0, ',', '.');
 
         return [
-            // Breakdown status event
-            Card::make('Draft',   $draftCount)
+            Card::make('Total Events', $totalEvents)
                 ->color('secondary'),
-            Card::make('Pending', $pendingCount)
-                ->color('warning'),
-            Card::make('Approved',$approvedCount)
-                ->color('success'),
-            Card::make('Rejected',$rejectedCount)
-                ->color('danger'),
 
-            // Total users
-            Card::make('Total Users', $totalUsers),
-
-            // Total tickets sold
-            Card::make('Tickets Sold', $ticketsSold),
-
-            // Total revenue
-            Card::make('Total Revenue', "Rp {$formattedRev}"),
-
-            // Event terlaris
-            Card::make('Top Event', $topCount)
-                ->description($topTitle)
+            Card::make('Total Users', $totalUsers)
                 ->color('primary'),
+
+            Card::make('Tickets Sold', $ticketsSold)
+                ->color('success'),
+
+            Card::make('Total Revenue', $formattedRevenue)
+                ->color('danger'),
         ];
     }
 }

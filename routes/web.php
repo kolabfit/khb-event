@@ -31,8 +31,6 @@ Route::middleware(['auth', 'role:user'])->get('/user', function () {
     return view('user.dashboard');
 })->name('user.dashboard');
 
-
-
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')               // atau sesuai prefix Filament-mu
     ->group(function () {
@@ -46,7 +44,6 @@ Route::middleware(['auth', 'role:admin'])
 Route::get('/filament/reports/export', [ReportExportController::class, 'export'])
     ->middleware(['auth'])   // sesuaikan middleware Filament Anda
     ->name('report.export');
-
 
 Route::get('/dashboard', function () {
     return view('dashboard');

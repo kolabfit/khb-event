@@ -14,11 +14,13 @@ class TicketSalesChart extends ChartWidget
         'sm' => 2,
         'lg' => 'full',
     ];
+    
 
     protected function getType(): string
     {
         return 'line';
     }
+    
 
     protected function getData(): array
     {

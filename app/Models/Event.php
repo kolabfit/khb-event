@@ -20,6 +20,7 @@ class Event extends Model
         'quota',
         'status',
         'thumbnail',
+        'price',
     ];
 
     public function user()
@@ -46,5 +47,17 @@ class Event extends Model
     {
         $total = $this->ticketTypes()->sum('quota');
         $this->update(['quota' => $total]);
+    }
+
+    public function payments()
+    {
+        return $this->hasManyThrough(
+            Payment::class,
+            Ticket::class,
+            'event_id',  // FK di tickets
+            'ticket_id', // FK di payments
+            'id',
+            'id'
+        );
     }
 }
