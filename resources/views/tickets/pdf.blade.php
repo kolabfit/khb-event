@@ -25,7 +25,7 @@
     /** Header **/
     .ticket-header {
       background: #8A2BE2;
-      color: #fff;
+      color: #ffffff;
       padding: 16px;
       text-align: center;
     }
@@ -113,10 +113,10 @@
             <th>User</th>
             <td>{{ $ticket->user->name }}</td>
           </tr>
-          <tr>
+          <!-- <tr>
             <th>Ticket Type</th>
             <td>{{ $ticket->ticketType->name }}</td>
-          </tr>
+          </tr> -->
           <tr>
             <th>Price Paid</th>
             <td>Rp {{ number_format($ticket->price_paid, 0, ',', '.') }}</td>
