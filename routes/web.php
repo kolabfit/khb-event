@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Category;
+use App\Models\Event;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ReportExportController;
 
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,13 +16,18 @@ use App\Http\Controllers\ReportExportController;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
 |
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
 // Admin-only
@@ -46,7 +55,11 @@ Route::get('/filament/reports/export', [ReportExportController::class, 'export']
     ->name('report.export');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $data = Event::all()->load('user');
+    $category = Category::all();
+    return Inertia::render('Dashboard')->with(
+        ['dataevent' => $data, 'category' => $category]
+    );
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -71,6 +84,9 @@ Route::get('/dashboard', function () {
 //         ->name('profile.destroy');
 // });
 
+Route::get('/detail-event', function () {
+    return Inertia::render('DetailEvent');
+})->middleware(['auth', 'verified'])->name('events');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
