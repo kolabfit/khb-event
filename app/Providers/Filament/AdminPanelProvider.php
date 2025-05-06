@@ -63,7 +63,7 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                 ->label('Settings')
-                ->url('/admin/settings')
+                ->url('/profile')
                 ->icon('heroicon-s-cog-6-tooth'),
             ]);
 

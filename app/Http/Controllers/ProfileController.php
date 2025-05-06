@@ -52,7 +52,13 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        if ($request->routeIs('filament.admin.settings.update')) {
+            return Redirect::route('filament.admin.settings')   
+                ->with('status', 'profile-updated');
+        }
+
+        return Redirect::route('profile.edit')
+            ->with('status', 'profile-updated');
     }
 
     /**
