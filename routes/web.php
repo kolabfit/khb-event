@@ -4,9 +4,11 @@ use App\Http\Controllers\ProfileController;
 use App\Models\Category;
 use App\Models\Event;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ReportExportController;
+use App\Http\Controllers\OrderController;
 
 use Inertia\Inertia;
 
@@ -58,7 +60,12 @@ Route::get('/dashboard', function () {
     $data = Event::all()->load('user');
     $category = Category::all();
     return Inertia::render('Dashboard')->with(
-        ['dataevent' => $data, 'category' => $category]
+        [
+            'dataevent' => $data,
+            'category' => $category,
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+        ]
     );
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -84,8 +91,11 @@ Route::get('/dashboard', function () {
 //         ->name('profile.destroy');
 // });
 
-Route::get('/detail-event', function () {
-    return Inertia::render('DetailEvent');
+Route::get('/detail-event', function (Request $request) {
+    $event = Event::where('id', $request->query('id'))->with('user', 'categories')->first();
+    return Inertia::render('DetailEvent')->with(
+        ['event' => $event]
+    );
 })->middleware(['auth', 'verified'])->name('events');
 
 Route::middleware('auth')->group(function () {
@@ -93,5 +103,24 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // GET form order
+    Route::get('/order-event/order', [OrderController::class, 'create'])
+        ->name('order-event.order');
+
+    // POST simpan order
+    Route::post('/order-event/order', [OrderController::class, 'store'])
+        ->name('order-event.order.store');
+});
+
+// routes/web.php
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/payments/{ticket}/confirm', [OrderController::class, 'confirm'])
+        ->name('payments.confirm');
+    Route::post('/payments/confirm', [OrderController::class, 'confirmStore'])
+        ->name('payments.confirm.store');
+});
+
 
 require __DIR__ . '/auth.php';

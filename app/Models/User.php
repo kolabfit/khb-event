@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -50,5 +51,14 @@ class User extends Authenticatable
     public function events()
     {
         return $this->hasMany(\App\Models\Event::class);
+    }
+
+    public function getAvatarAttribute(): string
+    {
+        // Jika kamu menyimpan di storage/app/public/…
+        // akan jadi: https://your-app.com/storage/namafile.jpg
+        return Storage::url($this->attributes['avatar']);
+        // atau, kalau di direktori public/images:
+        // return asset($this->attributes['image']);
     }
 }

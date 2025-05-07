@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Music, Monitor, PartyPopper, Mic, Scissors, Calendar } from 'lucide-react';
 import EventCards from './EventCard';
 import { Link } from '@inertiajs/react';
+import DynamicHeroIcon from './DynamicHeroIcon';
 
-const EventPage = ({dataevent, categories}) => {
+const EventPage = ({ dataevent, categories }) => {
   const [email, setEmail] = useState('');
   console.log(categories);
 
@@ -35,7 +36,10 @@ const EventPage = ({dataevent, categories}) => {
                   className="flex flex-col items-center cursor-pointer group"
                 >
                   <div className="rounded-full bg-gray-100 p-3 mb-2 group-hover:bg-gray-200 transition-colors">
-                    {category.icon}
+                    <DynamicHeroIcon
+                      iconString={category.icon ?? ""}
+                      className="h-6 w-6 text-purple-600 group-hover:text-purple-800 transition-colors"
+                    />
                   </div>
                   <span className="text-xs group-hover:font-medium transition-all">{category.name}</span>
                 </Link>
@@ -45,7 +49,7 @@ const EventPage = ({dataevent, categories}) => {
 
           {/* Event Cards */}
           <div className="grid grid-cols-4 gap-7">
-            <EventCards dataevent={dataevent}/>
+            <EventCards dataevent={dataevent} />
           </div>
         </div>
       </div>

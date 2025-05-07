@@ -12,8 +12,8 @@
 
                 <!-- Navigation Links -->
                 <div class="shrink-0 flex items-center">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('KHB') }}
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-xl font-bold text-indigo-900">
+                        {{ __('KHB EVENT') }}
                     </x-nav-link>
                 </div>
             </div>

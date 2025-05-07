@@ -16,6 +16,9 @@ class Payment extends Model
         'transaction_id',
         'status',
         'paid_at',
+        'buyer_name',
+        'buyer_email',
+        'buyer_phone',
     ];
 
     public function ticket()
