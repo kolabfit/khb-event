@@ -5,7 +5,7 @@ import EventPage from '@/components/EventPage';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 
-export default function Dashboard({ auth, dataevent, category }) {
+export default function Dashboard({ auth, dataevent, category, events }) {
     return (
         <
         >
@@ -15,7 +15,7 @@ export default function Dashboard({ auth, dataevent, category }) {
                 <Navbar auth={auth}/>
                 <HeroSection />
                 {/* <Timer /> */}
-                <EventPage dataevent={dataevent} categories={category} />
+                <EventPage dataevent={dataevent} categories={category} catevents={events} />
                 <Footer />
             </div>
         </>

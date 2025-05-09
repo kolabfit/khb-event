@@ -9,6 +9,8 @@ use App\Filament\Widgets\PendingItemsTable;
 use Filament\Widgets\Widget; 
 use App\Filament\Widgets\TicketSalesWidget;
 use App\Filament\Widgets\TopEventsWidget; // ← import
+use App\Filament\Widgets\PendingEventsWidget; // ← import
+
 
 
 class Dashboard extends BasePage
@@ -31,6 +33,7 @@ class Dashboard extends BasePage
             // PendingItemsTable::class,
             // TicketSalesWidget::class,
             TopEventsWidget::class,
+            PendingEventsWidget::class,
         ];
     }
 

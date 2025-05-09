@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from '@inertiajs/react';
 
 export default function HeroSection() {
   return (
@@ -14,9 +15,12 @@ export default function HeroSection() {
               Temukan dan beli tiket event sesuai minatmu, dari konser hingga workshop.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="px-6 py-3 bg-green-300 text-black font-semibold rounded-md hover:bg-green-400 transition">
+              <Link
+                href={route('events')}
+                className="px-6 py-3 bg-green-300 text-black font-semibold rounded-md hover:bg-green-400 transition"
+              >
                 Jelajahi Event
-              </button>
+              </Link>
               <button className="px-6 py-3 bg-white text-purple-700 font-semibold rounded-md hover:bg-gray-100 transition">
                 Buat Event Sekarang
               </button>

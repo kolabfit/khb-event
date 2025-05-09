@@ -33,7 +33,8 @@ class AdminPanelProvider extends PanelProvider
                 'role:admin',
             ])
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Violet,
+                'secondary' => Color::Green,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -65,8 +66,13 @@ class AdminPanelProvider extends PanelProvider
                 ->label('Settings')
                 ->url('/profile')
                 ->icon('heroicon-s-cog-6-tooth'),
-            ]);
+            ])
 
+            ->brandLogo(
+                asset('images/khb.png')
+            )
+
+            ->brandLogoHeight('5rem');
 
     }
 }

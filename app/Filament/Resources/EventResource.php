@@ -3,18 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EventResource\Pages;
-use App\Filament\Resources\EventResource\RelationManagers\TicketTypesRelationManager;
 use App\Models\Event;
-use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form as FilamentForm;
 use Filament\Resources\Resource;
-use Filament\Tables\Table as FilamentTable;
+use Filament\Support\RawJs;
 use Filament\Tables;
-use Filament\Forms\Components\RichEditor;
-
-
+use Filament\Tables\Table as FilamentTable;
 
 class EventResource extends Resource
 {
@@ -28,20 +26,16 @@ class EventResource extends Resource
     {
         return $form
             ->schema([
-                // Auto-assign user_id based on logged-in user
                 Hidden::make('user_id')
                     ->default(fn() => auth()->id()),
 
-                Forms\Components\TextInput::make('title')
+                TextInput::make('title')
                     ->label('Judul Event')
                     ->required()
-                    ->maxLength(255)
-                    ->extraAttributes([
-                        'class' => 'bg-white border-khb-purple focus:border-khb-green',
-                    ]),
+                    ->maxLength(255),
 
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug')
+                TextInput::make('slug')
+                    ->label('Kata Kunci')
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
@@ -57,8 +51,8 @@ class EventResource extends Resource
                 RichEditor::make('description')
                     ->label('Deskripsi')
                     ->required()
-                    ->columnSpanFull()  // full-width
-                    ->toolbarButtons([  // sesuaikan tombol toolbar
+                    ->columnSpanFull()
+                    ->toolbarButtons([
                         'bold',
                         'italic',
                         'underline',
@@ -70,45 +64,58 @@ class EventResource extends Resource
                         'attachFiles',
                     ])
                     ->extraAttributes([
-                        'style' => 'min-height:250px;',  // minimal tinggi 250px
+                        'style' => 'min-height:250px;',
                     ]),
 
-                Forms\Components\TextInput::make('location')
+                TextInput::make('location')
                     ->label('Lokasi')
                     ->required()
                     ->maxLength(255),
 
                 Forms\Components\DateTimePicker::make('start_date')
-                    ->label('Mulai Tanggal & Waktu')
+                    ->label('Acara Mulai')
                     ->required(),
 
                 Forms\Components\DateTimePicker::make('end_date')
-                    ->label('Selesai Tanggal & Waktu')
+                    ->label('Acara Selesai')
                     ->nullable(),
 
-                Forms\Components\TextInput::make('quota')
+                TextInput::make('quota')
                     ->label('Kuota Tiket')
                     ->required()
                     ->numeric(),
 
-                Forms\Components\TextInput::make('price')
+                TextInput::make('price')
                     ->label('Harga Tiket')
                     ->required()
-                    ->numeric(),
-                    
-                // Forms\Components\Select::make('status')
-                //     ->label('Status')
-                //     ->options([
-                //         'draft' => 'Draft',
-                //         'pending' => 'Pending',
-                //         'approved' => 'Approved',
-                //         'rejected' => 'Rejected',
-                //     ])
-                //     ->default('pending'),
+                    // 1) Mask frontend: tambahkan “Rp ” di depan
+                    ->mask(
+                        RawJs::make("
+                            (value) => {
+                                const digits = value.replace(/\\D/g, '');
+                                const formatted = digits.replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
+                                return formatted ? `Rp \${formatted}` : '';
+                            }
+                        ")
+                    )
+
+                    // 2) Strip prefix + titik sebelum simpan
+                    ->dehydrateStateUsing(
+                        fn(?string $state) => $state === null
+                        ? null
+                        : (int) str_replace(['Rp ', '.'], '', $state)
+                    )
+                    // 3) Saat load form (edit), tampilkan ulang dengan prefix
+                    ->afterStateHydrated(
+                        fn(?int $state) => $state === null
+                        ? ''
+                        : 'Rp ' . number_format($state, 0, ',', '.')
+                    ),
 
                 Forms\Components\MultiSelect::make('categories')
                     ->label('Kategori')
-                    ->relationship('categories', 'name'),
+                    ->relationship('categories', 'name')
+                    ->helperText('Pilih kategori yang sudah ditambahkan sebelumnya.'),
             ]);
     }
 
@@ -118,13 +125,13 @@ class EventResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('thumbnail')
                     ->label('Thumbnail')
-                    ->extraAttributes(['class' => 'px-4 py-2 text-sm']),
+                    ->disk('public')
+                    ->size(50),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
-                    ->sortable()
-                    ->extraAttributes(['class' => 'px-4 py-2 text-sm']),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Organizer')
@@ -136,16 +143,6 @@ class EventResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable(),
 
-                // Tables\Columns\BadgeColumn::make('status')
-                //     ->label('Status')
-                //     ->colors([
-                //         'khb-purple' => 'draft',
-                //         'yellow'     => 'pending',
-                //         'green'      => 'approved',
-                //         'red'        => 'rejected',
-                //     ])
-                //     ->extraAttributes(['class' => 'uppercase text-xs']),
-
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y')
@@ -154,10 +151,14 @@ class EventResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->button()
-                    ->extraAttributes(['class' => 'bg-khb-green hover:bg-khb-green/80']),
+                    ->extraAttributes([
+                        'class' => 'bg-khb-green hover:bg-khb-green/80',
+                    ]),
                 Tables\Actions\DeleteAction::make()
                     ->button()
-                    ->extraAttributes(['class' => 'bg-red-600 hover:bg-red-700']),
+                    ->extraAttributes([
+                        'class' => 'bg-red-600 hover:bg-red-700',
+                    ]),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

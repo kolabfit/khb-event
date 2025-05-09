@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\OrderController;
-
 use Inertia\Inertia;
 
 /*
@@ -96,7 +95,7 @@ Route::get('/detail-event', function (Request $request) {
     return Inertia::render('DetailEvent')->with(
         ['event' => $event]
     );
-})->middleware(['auth', 'verified'])->name('events');
+})->middleware(['auth', 'verified'])->name('detail-events');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -122,5 +121,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('payments.confirm.store');
 });
 
+// Halaman list events, optional filter ?category=NamaKategori
+Route::get('/events', function (Request $request) {
+    $categories = Category::all();
+
+    // Query builder
+    $query = Event::with('categories', 'user');
+
+    if ($request->filled('category')) {
+        $query->whereHas('categories', function ($q) use ($request) {
+            $q->where('name', $request->category);
+        });
+    }
+
+    $events = $query->get();
+
+    return Inertia::render('EventsPage', [
+        'events' => $events,
+        'categories' => $categories,
+        'selectedCategory' => $request->category,
+    ]);
+})->name('events');
 
 require __DIR__ . '/auth.php';

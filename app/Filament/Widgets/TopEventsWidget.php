@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\TableWidget;
 use Filament\Tables;
 use App\Models\Event;
+use Filament\Tables\Columns\ImageColumn;
 
 class TopEventsWidget extends TableWidget
 {
@@ -30,6 +31,10 @@ class TopEventsWidget extends TableWidget
     protected function getTableColumns(): array
     {
         return [
+            ImageColumn::make('thumbnail')
+                ->label('Gambar')
+                ->size(50),      
+                
             Tables\Columns\TextColumn::make('title')
                 ->label('Event')
                 ->searchable()

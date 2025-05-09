@@ -33,11 +33,13 @@ class CategoryResource extends Resource
                     ->maxLength(100),
                 Forms\Components\TextInput::make('slug')
                     ->required()
+                    ->label('Kata Kunci')
                     ->maxLength(100),
                 IconPicker::make('icon')
                     ->label('Ikon')
                     ->required()
-                    ->extraAttributes(['style' => 'color: #10B981;']),
+                    ->extraAttributes(['style' => 'color: #10B981;'])
+                    ->helperText('Pilih ikon untuk kategori ini. Contoh: star')
             ]);
     }
 
