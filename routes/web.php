@@ -23,13 +23,17 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+    $data = Event::all()->load('user');
+    $category = Category::all();
+    return Inertia::render('DashboardUser')->with(
+        [
+            'dataevent' => $data,
+            'category' => $category,
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+        ]
+    );
+})->middleware(['guest'])->name('home');
 
 // Admin-only
 // Route::middleware(['auth','role:admin'])->get('/admin', function () {

@@ -4,49 +4,73 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\TableWidget;
 use Filament\Tables;
-use App\Models\Event;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use App\Models\Event;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class TopEventsWidget extends TableWidget
 {
-    protected static ?string $heading = 'Top 5 Events • Tickets & Revenue';
-
-    protected string|int|array $columnSpan = 'full';
-    
+    /**
+     * Judul widget pada dashboard
+     */
+    protected static ?string $heading = 'Top Selling Events';
 
     /**
-     * Tampilkan 5 event teratas.
+     * Lebar kolom widget
      */
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected string|int|array $columnSpan = 'full';
+
+    /**
+     * Batas jumlah event yang ditampilkan
+     */
+    protected int $limit = 5;
+
+    /**
+     * Query untuk mengambil data top selling events
+     *
+     * @return Builder|Relation|null
+     */
+    protected function getTableQuery(): Builder|Relation|null
     {
         return Event::query()
-            // Hitung jumlah tiket terjual per event
             ->withCount('tickets')
-            // Hitung total pendapatan per event via hasManyThrough
             ->withSum('payments', 'amount')
             ->orderByDesc('tickets_count')
-            ->limit(5);
+            ->limit($this->limit);
     }
 
+    /**
+     * Definisi kolom tabel widget
+     *
+     * @return array<int, Tables\Columns\Column>
+     */
     protected function getTableColumns(): array
     {
         return [
-            ImageColumn::make('thumbnail')
-                ->label('Gambar')
-                ->size(50),      
-                
-            Tables\Columns\TextColumn::make('title')
+            Tables\Columns\ImageColumn::make('thumbnail')
+                ->label('Thumbnail')
+                ->url(fn(Event $record): string => asset($record->thumbnail))
+                // ->getStateUsing(fn(Event $record) => $record->thumbnail)
+                ->width(120)
+                ->height(80),
+
+            TextColumn::make('title')
                 ->label('Event')
                 ->searchable()
                 ->sortable(),
 
-            Tables\Columns\TextColumn::make('tickets_count')
+            TextColumn::make('tickets_count')
                 ->label('Tickets Sold')
                 ->sortable(),
 
-            Tables\Columns\TextColumn::make('payments_sum_amount')
+            TextColumn::make('payments_sum_amount')
                 ->label('Revenue')
-                ->money('idr', true)
+                ->formatStateUsing(
+                    fn($state): string =>
+                    'Rp ' . number_format($state ?? 0, 0, ',', '.')
+                )
                 ->sortable(),
         ];
     }

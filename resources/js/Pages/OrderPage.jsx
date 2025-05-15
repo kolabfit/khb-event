@@ -1,11 +1,11 @@
 // resources/js/Pages/OrderPage.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from '@inertiajs/inertia-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Inertia } from '@inertiajs/inertia';
 
 export default function OrderPage({ event, auth }) {
-    // const [showQr, setShowQr] = useState(false);
     const { data, setData, post, errors, processing } = useForm({
         id: event.id,
         fullname: '',
@@ -14,17 +14,34 @@ export default function OrderPage({ event, auth }) {
         quantity: 1,
         payment_method: 'qris',
     });
-    const total = event.price * data.quantity;
+
+    // Gunakan integer mentah, fallback ke 0 jika null
+    const rawPrice = event.price ?? 0;
+    const total = rawPrice * data.quantity;
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Kirim form dan biarkan Inertia mengikuti redirect dari server
-        post(route('order-event.order.store'));
+
+        // Ambil harga mentah (number) atau 0 kalau gratis
+        const rawPrice = event.price != null ? Number(event.price) : 0;
+
+        if (rawPrice === 0) {
+            // Gratis: langsung catat order dan lompat ke success
+            post(route('order-event.order.store'), {
+                onSuccess: () => {
+                    // redirect ke dashboard atau halaman success
+                    Inertia.visit(route('dashboard'), { replace: true });
+                },
+            });
+        } else {
+            // Berbayar: lempar ke confirmPayment.jsx dengan data
+            post(route('order-event.order.store', { id: event.id, quantity: data.quantity }));
+        }
     };
 
     return (
         <>
-            <Navbar auth={auth}/>
+            <Navbar auth={auth} />
 
             <div className="bg-gray-100 min-h-screen py-12">
                 <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
@@ -92,7 +109,7 @@ export default function OrderPage({ event, auth }) {
                                     <div>
                                         <p className="text-sm text-gray-500">Harga/Tiket</p>
                                         <p className="text-lg font-semibold">
-                                            Rp {event.price.toLocaleString('id-ID')}
+                                            {event.price_label.toLocaleString('id-ID')}
                                         </p>
                                     </div>
                                     <div>
@@ -102,21 +119,25 @@ export default function OrderPage({ event, auth }) {
                                     <div>
                                         <p className="text-sm text-gray-500">Total Bayar</p>
                                         <p className="text-xl font-bold text-green-600">
-                                            Rp {total.toLocaleString('id-ID')}
+                                            {rawPrice === 0
+                                                ? '0'
+                                                : `Rp ${total.toLocaleString('id-ID')}`}
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Pilih Jumlah & Metode */}
+                                {/* Pilih Jumlah & Metode Pembayaran */}
                                 <div className="space-y-4">
                                     <label className="block text-sm font-medium">Jumlah Tiket</label>
                                     <div className="inline-flex items-center border border-gray-300 rounded-md overflow-hidden">
                                         <button
                                             type="button"
-                                            onClick={() => setData('quantity', Math.max(1, data.quantity - 1))}
+                                            onClick={() =>
+                                                setData('quantity', Math.max(1, data.quantity - 1))
+                                            }
                                             className="px-3 py-2 bg-gray-200 hover:bg-gray-300"
                                         >
-                                            -
+                                            −
                                         </button>
                                         <input
                                             type="number"
@@ -136,7 +157,12 @@ export default function OrderPage({ event, auth }) {
                                         />
                                         <button
                                             type="button"
-                                            onClick={() => setData('quantity', Math.min(event.quota, data.quantity + 1))}
+                                            onClick={() =>
+                                                setData(
+                                                    'quantity',
+                                                    Math.min(event.quota, data.quantity + 1)
+                                                )
+                                            }
                                             className="px-3 py-2 bg-gray-200 hover:bg-gray-300"
                                         >
                                             +
@@ -147,7 +173,9 @@ export default function OrderPage({ event, auth }) {
                                     )}
 
                                     <div>
-                                        <label className="block text-sm font-medium">Metode Pembayaran</label>
+                                        <label className="block text-sm font-medium">
+                                            Metode Pembayaran
+                                        </label>
                                         <select
                                             value={data.payment_method}
                                             disabled
@@ -170,26 +198,6 @@ export default function OrderPage({ event, auth }) {
                                 </button>
                             </div>
                         </form>
-
-                        {/* Popup QRIS */}
-                        {/* {showQr && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                                <div className="bg-white rounded-lg p-8 relative w-96 max-w-full">
-                                    <button
-                                        onClick={() => setShowQr(false)}
-                                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
-                                    >
-                                        &times;
-                                    </button>
-                                    <h2 className="text-xl font-semibold mb-4 text-center">Scan QRIS</h2>
-                                    <img
-                                        src="/images/static-qr.jpeg"
-                                        alt="QRIS Code"
-                                        className="mx-auto w-56 h-56 object-contain"
-                                    />
-                                </div>
-                            </div>
-                        )} */}
                     </div>
                 </div>
             </div>

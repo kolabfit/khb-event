@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 
 class OrderController extends Controller
@@ -28,6 +29,7 @@ class OrderController extends Controller
                 'thumbnail_url' => $event->thumbnail,
                 'price' => $event->price,
                 'quota' => $event->quota,
+                'price_label' => $event->price_label,
             ],
         ]);
     }
@@ -46,39 +48,49 @@ class OrderController extends Controller
 
         $event = Event::findOrFail($data['id']);
 
-        // Cek kuota
         if ($data['quantity'] > $event->quota) {
             return back()
                 ->withErrors(['quantity' => 'Kuota tidak mencukupi'])
                 ->withInput();
         }
 
-        // Kurangi kuota di event
         $event->decrement('quota', $data['quantity']);
 
-        // Simpan tiket (satu record per pembelian)
+        $totalPaid = $event->price * $data['quantity'];
+
         $ticket = Ticket::create([
             'event_id' => $event->id,
             'user_id' => Auth::id(),
-            'price_paid' => $event->price * $data['quantity'],
+            'price_paid' => $totalPaid,
             'status' => 'pending',
             'quantity' => $data['quantity'],
         ]);
 
-        // Simpan payment
-        Payment::create([
+        // Buat payment record untuk semua order, termasuk gratis
+        $payment = Payment::create([
             'ticket_id' => $ticket->id,
-            'amount' => $ticket->price_paid,
-            'method' => $data['payment_method'],
+            'amount' => $totalPaid,
+            'method' => $totalPaid === 0 ? 'free' : $data['payment_method'],
             'status' => 'pending',
-            // field tambahan buyer jika ada di tabel payments:
             'buyer_name' => $data['fullname'],
             'buyer_email' => $data['email'],
             'buyer_phone' => $data['phone'],
             'transaction_id' => Str::uuid(),
         ]);
 
-        // Redirect ke halaman konfirmasi pembayaran atau detail order
+        if ($totalPaid === 0) {
+
+            $payment->update([
+                'paid_at' => now(),
+            ]);
+
+            // Gratis: langsung ke dashboard
+            return redirect()
+                ->route('dashboard')
+                ->with('success', 'Tiket gratis Anda berhasil dipesan, menunggu approval admin.');
+        }
+
+        // Berbayar: minta user upload bukti dulu
         return redirect()->route('payments.confirm', [
             'ticket' => $ticket->id,
         ]);
@@ -107,7 +119,10 @@ class OrderController extends Controller
         $path = $request->file('receipt')->store('receipts', 'public');
 
         // Simpan path bukti ke payment (asumsi relasi ticket->payment)
-        $ticket->payment->update(['receipt_path' => $path, 'status' => 'paid']);
+        $ticket->payment->update(['receipt_path' => $path, 'paid_at' => now()]);
+
+        // Tandai ticket paid
+        // $ticket->update(['status' => 'paid']);
 
         return redirect()->route('dashboard')->with('success', 'Bukti pembayaran berhasil diunggah.');
     }

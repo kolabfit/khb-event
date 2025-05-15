@@ -19,6 +19,7 @@ class Payment extends Model
         'buyer_name',
         'buyer_email',
         'buyer_phone',
+        'receipt_path',
     ];
 
     public function ticket()

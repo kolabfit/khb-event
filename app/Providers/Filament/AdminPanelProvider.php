@@ -69,10 +69,10 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->brandLogo(
-                asset('images/khb.png')
+                asset('logo/khb.png')
             )
 
-            ->brandLogoHeight('5rem');
+            ->brandLogoHeight('2rem');
 
     }
 }

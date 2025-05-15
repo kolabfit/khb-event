@@ -27,7 +27,8 @@ export default function Navbar({ auth }) {
           <Link href={route('dashboard')} className="flex items-center space-x-2">
             <div className="flex items-center">
               {/* …your logo svg… */}
-              <span className="text-xl font-bold text-indigo-900">KHB EVENT</span>
+              {/* <span className="text-xl font-bold text-indigo-900">KHB EVENT</span> */}
+              <img src="/logo/khb.png" alt="" style={{ width: '100px', height: '40px' }}/>
             </div>
           </Link>
 

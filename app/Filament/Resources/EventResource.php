@@ -8,11 +8,18 @@ use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Form as FilamentForm;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table as FilamentTable;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Actions\CreateAction;  // pastikan ini di-import
 
 class EventResource extends Resource
 {
@@ -42,7 +49,7 @@ class EventResource extends Resource
                     ->reactive()
                     ->afterStateUpdated(fn($state, callable $set) => $set('slug', \Str::slug($state))),
 
-                Forms\Components\FileUpload::make('thumbnail')
+                FileUpload::make('thumbnail')
                     ->label('Thumbnail')
                     ->image()
                     ->imagePreviewHeight('200')
@@ -63,20 +70,18 @@ class EventResource extends Resource
                         'codeBlock',
                         'attachFiles',
                     ])
-                    ->extraAttributes([
-                        'style' => 'min-height:250px;',
-                    ]),
+                    ->extraAttributes(['style' => 'min-height:250px;']),
 
                 TextInput::make('location')
                     ->label('Lokasi')
                     ->required()
                     ->maxLength(255),
 
-                Forms\Components\DateTimePicker::make('start_date')
+                DateTimePicker::make('start_date')
                     ->label('Acara Mulai')
                     ->required(),
 
-                Forms\Components\DateTimePicker::make('end_date')
+                DateTimePicker::make('end_date')
                     ->label('Acara Selesai')
                     ->nullable(),
 
@@ -85,37 +90,51 @@ class EventResource extends Resource
                     ->required()
                     ->numeric(),
 
-                TextInput::make('price')
-                    ->label('Harga Tiket')
-                    ->required()
-                    // 1) Mask frontend: tambahkan “Rp ” di depan
-                    ->mask(
-                        RawJs::make("
-                            (value) => {
-                                const digits = value.replace(/\\D/g, '');
-                                const formatted = digits.replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
-                                return formatted ? `Rp \${formatted}` : '';
-                            }
-                        ")
-                    )
+                Toggle::make('is_paid')
+                    ->label('Event Berbayar?')
+                    ->default(true)
+                    ->reactive()  // <-- buat biar field lain bisa merespon perubahan secara langsung
+                    ->disabled(fn(bool $state): bool => !$state),
 
-                    // 2) Strip prefix + titik sebelum simpan
-                    ->dehydrateStateUsing(
-                        fn(?string $state) => $state === null
-                        ? null
-                        : (int) str_replace(['Rp ', '.'], '', $state)
+                TextInput::make('price')
+                    ->label('Harga Tiket (IDR)')
+                    ->reactive()
+                    ->visible(fn($get) => $get('is_paid'))
+                    ->required(fn($get) => $get('is_paid'))
+                    // Mask: setiap input akan di-strip non-digit, lalu diformat pakai Intl.NumberFormat
+                    ->mask(
+                        RawJs::make(<<<'JS'
+            (value) => {
+                // Buang semua karakter kecuali digit
+                const digits = value.replace(/\D/g, '');
+                if (!digits) {
+                    return '';
+                }
+                // Format ribuan sesuai locale id-ID
+                const formatted = new Intl.NumberFormat('id-ID').format(digits);
+                return `Rp ${formatted}`;
+            }
+        JS)
                     )
-                    // 3) Saat load form (edit), tampilkan ulang dengan prefix
+                    // Simpan state sebagai integer tanpa prefix/titik
+                    ->dehydrateStateUsing(
+                        fn(?string $state) =>
+                        $state
+                        ? (int) str_replace(['Rp ', '.'], '', $state)
+                        : null
+                    )
+                    // Ketika form di-load (edit), tampilkan dalam format rupiah
                     ->afterStateHydrated(
-                        fn(?int $state) => $state === null
-                        ? ''
-                        : 'Rp ' . number_format($state, 0, ',', '.')
+                        fn(?int $state) =>
+                        $state !== null
+                        ? 'Rp ' . number_format($state, 0, ',', '.')
+                        : ''
                     ),
 
-                Forms\Components\MultiSelect::make('categories')
+                MultiSelect::make('categories')
                     ->label('Kategori')
-                    ->relationship('categories', 'name')
-                    ->helperText('Pilih kategori yang sudah ditambahkan sebelumnya.'),
+                    ->helperText('Pilih kategori yang sudah ditambahkan sebelumnya.')
+                    ->relationship('categories', 'name'),
             ]);
     }
 
@@ -125,13 +144,30 @@ class EventResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('thumbnail')
                     ->label('Thumbnail')
-                    ->disk('public')
-                    ->size(50),
+                    ->url(fn(Event $record): string => asset($record->thumbnail))
+                    // ->getStateUsing(fn(Event $record) => $record->thumbnail)
+                    ->width(120)
+                    ->height(80),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
                     ->sortable(),
+
+                // Tables\Columns\IconColumn::make('is_paid')
+                //     ->label('Berbayar')
+                //     ->boolean(),
+
+                TextColumn::make('formatted_price')
+                    ->label('Harga')
+                    // Ambil langsung dari model→price
+                    ->getStateUsing(
+                        fn(Event $record) => ((int) $record->price) > 0
+                        ? 'Rp ' . number_format($record->price, 0, ',', '.')
+                        : 'Gratis'
+                    )
+                    // tetap sortable berdasarkan kolom price di DB
+                    ->sortable('price'),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Organizer')
@@ -151,14 +187,10 @@ class EventResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->button()
-                    ->extraAttributes([
-                        'class' => 'bg-khb-green hover:bg-khb-green/80',
-                    ]),
+                    ->extraAttributes(['class' => 'bg-khb-green hover:bg-khb-green/80']),
                 Tables\Actions\DeleteAction::make()
                     ->button()
-                    ->extraAttributes([
-                        'class' => 'bg-red-600 hover:bg-red-700',
-                    ]),
+                    ->extraAttributes(['class' => 'bg-red-600 hover:bg-red-700']),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

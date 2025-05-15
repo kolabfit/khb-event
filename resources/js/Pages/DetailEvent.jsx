@@ -1,24 +1,41 @@
-import React, { useState } from 'react';
-import { Calendar, MapPin, Clock, Users } from 'lucide-react';
+// resources/js/Pages/EventDetailPage.jsx
+import React from 'react';
+import { Calendar, MapPin, Clock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Link } from '@inertiajs/inertia-react';
 import Footer from '@/components/Footer';
 
 export default function EventDetailPage({ event, auth }) {
-    // const [quantity, setQuantity] = useState(1);
-    // const increase = () => setQuantity(q => Math.min(event.quota, q + 1));
-    // const decrease = () => setQuantity(q => Math.max(1, q - 1));
+    // Hitung harga mentah, default ke 0 bila null
+    const rawPrice = event.price != null ? Number(event.price) : 0;
+    // Siapkan label: rupiah bila >0, "Gratis" bila 0
+    const priceLabel =
+        rawPrice > 0
+            ? rawPrice.toLocaleString('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+            })
+            : 'Gratis';
 
     return (
         <>
-            <Navbar auth={auth}/>
+            <Navbar auth={auth} />
             <div className="container mx-auto px-4 py-8 mb-12">
                 {/* Breadcrumb */}
                 <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
                     <ol className="inline-flex items-center space-x-2">
-                        <li><a href="/" className="hover:underline">Beranda</a></li>
+                        <li>
+                            <Link href="/" className="hover:underline">
+                                Beranda
+                            </Link>
+                        </li>
                         <li>›</li>
-                        <li><a href="/events" className="hover:underline">Events</a></li>
+                        <li>
+                            <Link href="/events" className="hover:underline">
+                                Events
+                            </Link>
+                        </li>
                         <li>›</li>
                         <li className="text-gray-800 font-medium">{event.title}</li>
                     </ol>
@@ -43,21 +60,29 @@ export default function EventDetailPage({ event, auth }) {
                                 <span className="flex items-center">
                                     <Calendar className="w-4 h-4 mr-1" />
                                     {new Date(event.start_date).toLocaleDateString('id-ID', {
-                                        day: 'numeric', month: 'long', year: 'numeric'
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric',
                                     })}
                                 </span>
                                 <span className="flex items-center">
                                     <Clock className="w-4 h-4 mr-1" />
-                                    {new Date(event.start_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                    {' - '}
-                                    {new Date(event.end_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(event.start_date).toLocaleTimeString('id-ID', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}{' '}
+                                    -{' '}
+                                    {new Date(event.end_date).toLocaleTimeString('id-ID', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
                                 </span>
                                 <span className="flex items-center">
                                     <MapPin className="w-4 h-4 mr-1" /> {event.location}
                                 </span>
                             </div>
                             <div className="flex flex-wrap gap-2 mt-2">
-                                {event.categories.map(cat => (
+                                {event.categories.map((cat) => (
                                     <span
                                         key={cat.name}
                                         className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full"
@@ -91,55 +116,26 @@ export default function EventDetailPage({ event, auth }) {
 
                         {/* Ticket Types */}
                         <div className="bg-white rounded-lg shadow-sm p-4">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Pilih Tiket</h2>
+                            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                                Pilih Tiket
+                            </h2>
                             {/* Baris Kuota & Harga */}
                             <div className="flex items-baseline justify-between">
                                 <div>
-                                    <span className="text-lg font-medium text-gray-800">{event.quota} kursi</span>
+                                    <span className="text-lg font-medium text-gray-800">
+                                        {event.quota} kursi
+                                    </span>
                                     <p className="text-sm text-gray-500">tersisa</p>
                                 </div>
                                 <span className="text-lg font-semibold text-gray-800">
-                                    Rp {event.price.toLocaleString('id-ID')}
+                                    {priceLabel}
                                 </span>
                             </div>
                             {/* Baris Quantity & Pesan */}
                             <div className="flex items-center space-x-2 mt-4 justify-end">
-                                {/* <button
-                                    onClick={decrease}
-                                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 transition"
-                                >
-                                    –
-                                </button>
-                                <input
-                                    type="number"
-                                    value={quantity}
-                                    onChange={e => {
-                                        const val = parseInt(e.target.value, 10) || 1;
-                                        setQuantity(Math.min(Math.max(1, val), event.quota));
-                                    }}
-                                    min="1"
-                                    max={event.quota}
-                                    className="w-12 text-center border rounded"
-                                />
-                                <button
-                                    onClick={increase}
-                                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 transition"
-                                >
-                                    +
-                                </button> */}
-                                {/* <button
-                                    onClick={handleOrder}
-                                    className="ml-auto px-4 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition"
-                                >
-                                    Pesan
-                                </button> */}
-                                {/* Link langsung sebagai button */}
                                 <Link
                                     as="button"
-                                    href={route('order-event.order', {
-                                        id: event.id
-                                        // kalau mau kirim quantity via query juga
-                                    })}
+                                    href={route('order-event.order', { id: event.id })}
                                     className="ml-2 px-4 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition"
                                 >
                                     Pesan
@@ -151,9 +147,15 @@ export default function EventDetailPage({ event, auth }) {
                         <div className="bg-white rounded-lg shadow-sm p-4">
                             <p className="text-sm text-gray-600 mb-2">Bagikan:</p>
                             <div className="flex space-x-3">
-                                <a href="#" className="text-blue-600 hover:text-blue-800">Facebook</a>
-                                <a href="#" className="text-blue-400 hover:text-blue-600">Twitter</a>
-                                <a href="#" className="text-pink-500 hover:text-pink-700">Instagram</a>
+                                <a href="#" className="text-blue-600 hover:text-blue-800">
+                                    Facebook
+                                </a>
+                                <a href="#" className="text-blue-400 hover:text-blue-600">
+                                    Twitter
+                                </a>
+                                <a href="#" className="text-pink-500 hover:text-pink-700">
+                                    Instagram
+                                </a>
                             </div>
                         </div>
                     </aside>
