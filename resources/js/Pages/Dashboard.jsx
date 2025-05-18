@@ -10,7 +10,6 @@ export default function Dashboard({ auth, dataevent, category, events }) {
         <
         >
             <Head title="Dashboard" />
-
             <div className="min-h-screen bg-gray-50">
                 <Navbar auth={auth}/>
                 <HeroSection />

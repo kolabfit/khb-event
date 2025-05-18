@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EventHistoryController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Category;
 use App\Models\Event;
@@ -124,6 +125,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/payments/confirm', [OrderController::class, 'confirmStore'])
         ->name('payments.confirm.store');
 });
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Route lainnya...
+
+    Route::get('/event-history', [EventHistoryController::class, 'index'])->name('event.history');
+});
+
 
 // Halaman list events, optional filter ?category=NamaKategori
 Route::get('/events', function (Request $request) {

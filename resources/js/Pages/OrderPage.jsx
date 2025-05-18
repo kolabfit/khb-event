@@ -1,9 +1,9 @@
-// resources/js/Pages/OrderPage.jsx
-import React from 'react';
-import { useForm } from '@inertiajs/inertia-react';
+import React, { useEffect } from 'react';
+import { useForm } from '@inertiajs/react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Inertia } from '@inertiajs/inertia';
+import { Calendar, MapPin, Clock } from 'lucide-react'; // Import icons
 
 export default function OrderPage({ event, auth }) {
     const { data, setData, post, errors, processing } = useForm({
@@ -14,6 +14,11 @@ export default function OrderPage({ event, auth }) {
         quantity: 1,
         payment_method: 'qris',
     });
+
+    // Tampilkan informasi event untuk debugging
+    useEffect(() => {
+        console.log("Data event yang diterima:", event);
+    }, []);
 
     // Gunakan integer mentah, fallback ke 0 jika null
     const rawPrice = event.price ?? 0;
@@ -39,6 +44,12 @@ export default function OrderPage({ event, auth }) {
         }
     };
 
+    // Handle kembali ke halaman detail event
+    const handleBack = () => {
+    const url = route('detail-events') + `?id=${event.id}`;
+    Inertia.visit(url, { preserveState: true });
+};
+
     return (
         <>
             <Navbar auth={auth} />
@@ -54,10 +65,41 @@ export default function OrderPage({ event, auth }) {
 
                     {/* Konten Utama */}
                     <div className="p-6 space-y-6">
-                        <h1 className="text-3xl font-bold">Pesan Tiket</h1>
-                        <p className="text-gray-600">
-                            Acara: <span className="font-medium">{event.title}</span>
-                        </p>
+                        <div className="space-y-2">
+                            <h1 className="text-3xl font-bold">Pesan Tiket</h1>
+                            <p className="text-gray-600">
+                                Acara: <span className="font-medium">{event.title}</span>
+                            </p>
+                            
+                            {/* Tambahkan waktu dan lokasi event */}
+                            <div className="flex flex-wrap items-center text-gray-600 space-x-4 mt-2">
+                                <span className="flex items-center">
+                                    <Calendar className="w-4 h-4 mr-1" />
+                                    {event.start_date ? new Date(event.start_date).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                    }) : "Tanggal belum ditentukan"}
+                                </span>
+                                <span className="flex items-center">
+                                    <Clock className="w-4 h-4 mr-1" />
+                                    {event.start_date ? new Date(event.start_date).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }) : "00:00"}{" "}
+                                    -{" "}
+                                    {event.end_date ? new Date(event.end_date).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }) : "00:00"}
+                                </span>
+                            </div>
+                            <div className="text-gray-600">
+                                <span className="flex items-center">
+                                    <MapPin className="w-4 h-4 mr-1" /> {event.location || "Lokasi belum ditentukan"}
+                                </span>
+                            </div>
+                        </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Biodata */}
@@ -187,8 +229,15 @@ export default function OrderPage({ event, auth }) {
                                 </div>
                             </div>
 
-                            {/* Tombol Bayar */}
-                            <div className="flex justify-end">
+                            {/* Tombol - Tambahkan tombol Kembali di sebelah kiri tombol Bayar */}
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={handleBack}
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                                >
+                                    Kembali
+                                </button>
                                 <button
                                     type="submit"
                                     disabled={processing}

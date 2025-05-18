@@ -25,6 +25,9 @@ class OrderController extends Controller
             'event' => [
                 'id' => $event->id,
                 'title' => $event->title,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'location' => $event->location,
                 // field thumbnail_url atau yang sesuai di model Event
                 'thumbnail_url' => $event->thumbnail,
                 'price' => $event->price,
