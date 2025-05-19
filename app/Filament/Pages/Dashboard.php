@@ -2,15 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\PendingApprovalTicketsWidget;
 use Filament\Pages\Dashboard as BasePage;
-use App\Filament\Widgets\StatsOverview;
-use App\Filament\Widgets\TicketSalesChart;
-use App\Filament\Widgets\PendingItemsTable;
-use Filament\Widgets\Widget; 
-use App\Filament\Widgets\TicketSalesWidget;
-use App\Filament\Widgets\TopEventsWidget; // ← import
-
 
 
 class Dashboard extends BasePage
@@ -18,29 +10,11 @@ class Dashboard extends BasePage
     protected static ?string $navigationIcon = 'heroicon-o-home';
     protected static string $view = 'filament.pages.dashboard';
 
-    // override header widgets → kosongkan
-    protected function getHeaderWidgets(): array
-    {
-        return [];
-    }
+    // protected static ?array $widgets = [
+    //    TicketScannerWidget::class,
+    //    StatsOverview::class,
+    //    TicketSalesChart::class,
+    //    TopEventsWidget::class,
 
-    // main widgets yang mau tampil
-    public function getWidgets(): array
-    {
-        return [
-            StatsOverview::class,
-            TicketSalesChart::class,
-            // PendingItemsTable::class,
-            // TicketSalesWidget::class,
-            TopEventsWidget::class,
-            // PendingEventsWidget::class,
-            PendingApprovalTicketsWidget::class,
-        ];
-    }
-
-    // override footer widgets → kosongkan
-    protected function getFooterWidgets(): array
-    {
-        return [];
-    }
+    // ];
 }

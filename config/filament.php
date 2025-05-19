@@ -33,6 +33,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Widget Paths
+    |--------------------------------------------------------------------------
+    |
+    | Additional paths where Filament should look for widget classes.
+    | This allows you to organize widgets in different directories.
+    |
+    */
+
+    // // 'widgets' => [
+    // //     'paths' => [
+    // //         app_path('Filament/Widgets'),
+    // //         app_path('Filament/TicketWidgets'),
+    // //     ],
+    // ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Filesystem Disk
     |--------------------------------------------------------------------------
     |

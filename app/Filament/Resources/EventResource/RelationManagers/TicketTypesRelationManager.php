@@ -64,6 +64,12 @@ class TicketTypesRelationManager extends RelationManager
                 TextColumn::make('remaining_quota')
                     ->label('Kuota Tersisa')
                     ->sortable(),
+                TextColumn::make('paid_tickets_count')
+                    ->label('Tiket Paid')
+                    ->getStateUsing(fn($record) => $record->tickets()->where('status', 'paid')->count()),
+                TextColumn::make('used_tickets_count')
+                    ->label('Tiket Used')
+                    ->getStateUsing(fn($record) => $record->tickets()->where('status', 'used')->count()),
             ])
             ->actions([
                 EditAction::make()->label('Edit'),

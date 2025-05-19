@@ -17,8 +17,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        // Store the redirect URL in the session if it exists
+        if ($request->has('redirect')) {
+            session(['redirect_after_login' => $request->redirect]);
+        }
+        
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
@@ -33,6 +38,18 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        // Check if we have a redirect URL in the session
+        if (session()->has('redirect_after_login')) {
+            $redirect = session('redirect_after_login');
+            session()->forget('redirect_after_login');
+            return redirect($redirect);
+        }
+
+        // Check if user is admin, redirect to admin panel
+        if (Auth::user()->hasRole('admin')) {
+            return redirect()->route('filament.admin.pages.dashboard');
+        }
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

@@ -133,13 +133,23 @@ export default function EventDetailPage({ event, auth }) {
                             </div>
                             {/* Baris Quantity & Pesan */}
                             <div className="flex items-center space-x-2 mt-4 justify-end">
-                                <Link
-                                    as="button"
-                                    href={route('order-event.order', { id: event.id })}
-                                    className="ml-2 px-4 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition"
-                                >
-                                    Pesan
-                                </Link>
+                                {auth.user ? (
+                                    <Link
+                                        as="button"
+                                        href={route('order-event.order', { id: event.id })}
+                                        className="ml-2 px-4 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition"
+                                    >
+                                        Pesan
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        as="button"
+                                        href={route('login', { redirect: window.location.pathname + window.location.search })}
+                                        className="ml-2 px-4 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition"
+                                    >
+                                        Login untuk Pesan Tiket
+                                    </Link>
+                                )}
                             </div>
                         </div>
 

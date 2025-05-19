@@ -12,20 +12,30 @@ export default function PaymentConfirmation({ ticket, auth }) {
     const handleUpload = (e) => {
         e.preventDefault();
         post(route('payments.confirm.store'), {
-            forceFormData: true,   // agar bisa upload file
+            forceFormData: true,
             preserveScroll: true,
         });
     };
 
+    // Pastikan kita punya angka, fallback 0
+    const pricePerTicket = Number(ticket.price_per_ticket) || 0;
+    const totalPaid = Number(ticket.total_paid) || 0;
+
+    const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    });
+
     return (
         <>
-            <Navbar auth={auth}/>
+            <Navbar auth={auth} />
 
             <div className="container mx-auto px-4 py-12">
                 <div className="max-w-lg mx-auto bg-white rounded-lg shadow-md p-6 space-y-6">
                     <h1 className="text-2xl font-bold text-center">Konfirmasi Pembayaran</h1>
 
-                    {/* QRIS Large Image */}
+                    {/* QRIS */}
                     <div className="flex justify-center">
                         <img
                             src="/images/static-qr.jpeg"
@@ -34,13 +44,28 @@ export default function PaymentConfirmation({ ticket, auth }) {
                         />
                     </div>
 
-                    <p className="text-center text-gray-600">
-                        Acara: <strong>{ticket.event_title}</strong><br />
-                        Jumlah Tiket: <strong>{ticket.quantity}</strong><br />
-                        Total Bayar: <strong>Rp {ticket.price_paid.toLocaleString('id-ID')}</strong>
-                    </p>
+                    {/* Detail */}
+                    <div className="space-y-2 text-center text-gray-600">
+                        <p>
+                            Acara: <strong>{ticket.event_title}</strong>
+                        </p>
+                        <p>
+                            Harga/Tiket:{' '}
+                            <strong>{formatter.format(pricePerTicket)}</strong>
+                        </p>
+                        <p>
+                            Jumlah Tiket:{' '}
+                            <strong>{ticket.quantity}</strong>
+                        </p>
+                        <p>
+                            Total Bayar:{' '}
+                            <strong className="text-green-600">
+                                {formatter.format(totalPaid)}
+                            </strong>
+                        </p>
+                    </div>
 
-                    <form onSubmit={handleUpload} encType="multipart/form-data" className="space-y-4">
+                    <form onSubmit={handleUpload} encodeType="multipart/form-data" className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Upload Bukti Pembayaran

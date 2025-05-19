@@ -24,6 +24,8 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationGroup = 'Event Management';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -50,7 +52,8 @@ class CategoryResource extends Resource
                 IconColumn::make('icon')
                     ->label('Icon')
                     ->size('lg')
-                    ->extraAttributes(['style' => 'color: #FFFFFF;']),
+                    ->icon(fn (string $state): string => $state)
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('slug')
@@ -68,8 +71,12 @@ class CategoryResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->button()
+                    ->extraAttributes(['class' => 'bg-khb-blue hover:bg-khb-blue/80']),
+                Tables\Actions\EditAction::make()
+                    ->button()
+                    ->extraAttributes(['class' => 'bg-khb-green hover:bg-khb-green/80']),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

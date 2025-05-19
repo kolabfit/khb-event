@@ -27,7 +27,7 @@ class TopEventsWidget extends TableWidget
      */
     protected int $limit = 5;
 
-    /**
+        /**
      * Query untuk mengambil data top selling events
      *
      * @return Builder|Relation|null
@@ -36,7 +36,7 @@ class TopEventsWidget extends TableWidget
     {
         return Event::query()
             ->withCount('tickets')
-            ->withSum('payments', 'amount')
+            ->withSum('tickets as payments_sum_amount', 'price_paid')
             ->orderByDesc('tickets_count')
             ->limit($this->limit);
     }

@@ -28,7 +28,7 @@ export default function Navbar({ auth }) {
             <div className="flex items-center">
               {/* …your logo svg… */}
               {/* <span className="text-xl font-bold text-indigo-900">KHB EVENT</span> */}
-              <img src="/logo/khb.png" alt="" style={{ width: '100px', height: '40px' }}/>
+              <img src="/logo/khb.png" alt="" style={{ width: '100px', height: '40px' }} />
             </div>
           </Link>
 
@@ -60,18 +60,27 @@ export default function Navbar({ auth }) {
           {/* User Avatar / Login */}
           <div className="flex items-center">
             {!user ? (
-              <Link
-                href="/login"
-                className="px-5 py-2 font-medium text-black bg-green-300 rounded-full hover:bg-green-400 transition"
-              >
-                Login
-              </Link>
+              <div className="flex items-center space-x-3">
+                <Link
+                  href="/register"
+                  className="px-5 py-2 font-small text-black rounded-full hover:bg-purple-400 transition"
+                >
+                  Register
+                </Link>
+                <Link
+                  href="/login"
+                  className="px-5 py-2 font-small text-black bg-green-300 rounded-full hover:bg-green-400 transition"
+                >
+                  Login
+                </Link>
+              </div>
             ) : (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setOpen((o) => !o)}
-                  className="focus:outline-none"
+                  className="focus:outline-none flex items-center space-x-2"
                 >
+                  <span className="font-small text-gray-500">{user.name}</span>
                   <img
                     src={user.avatar}
                     alt="Avatar"

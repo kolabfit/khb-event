@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Models\Payment;
 use Filament\Resources\Resource;
-use Filament\Tables\Table as FilamentTable;    // ← import yang benar
+use Filament\Tables\Table as FilamentTable;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
@@ -17,7 +17,9 @@ use App\Filament\Resources\PaymentResource\Pages\ViewPayment;
 use Filament\Forms\Form as FilamentForm;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Resources\Form;
+use Filament\Tables\Columns\ImageColumn;
+use Illuminate\Support\Facades\Storage;
+
 class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
@@ -30,15 +32,17 @@ class PaymentResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('ticket_id')
+                Select::make('ticket_reference')
                     ->label('Ticket')
                     ->relationship('ticket', 'id')
                     ->searchable()
+                    ->preload()
                     ->required(),
 
                 TextInput::make('amount')
                     ->label('Amount')
                     ->numeric()
+                    ->prefix('Rp')
                     ->required(),
 
                 Select::make('method')
@@ -47,6 +51,9 @@ class PaymentResource extends Resource
                         'midtrans' => 'Midtrans',
                         'xendit' => 'Xendit',
                         'manual' => 'Manual',
+                        'cash' => 'Cash',
+                        'transfer' => 'Bank Transfer',
+                        'qris' => 'QRIS',
                     ])
                     ->required(),
 
@@ -56,9 +63,20 @@ class PaymentResource extends Resource
                         'pending' => 'Pending',
                         'paid' => 'Paid',
                         'failed' => 'Failed',
+                        'expired' => 'Expired',
+                        'refunded' => 'Refunded',
                     ])
                     ->default('pending')
                     ->required(),
+
+                TextInput::make('transaction_id')
+                    ->label('Transaction ID')
+                    ->maxLength(255),
+
+                TextInput::make('payment_url')
+                    ->label('Payment URL')
+                    ->url()
+                    ->maxLength(255),
             ]);
     }
 
@@ -68,26 +86,45 @@ class PaymentResource extends Resource
             ->columns([
                 TextColumn::make('ticket.id')
                     ->label('Ticket ID')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
 
                 TextColumn::make('ticket.event.title')
                     ->label('Event')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(30),
 
-                TextColumn::make('ticket.user.name')
-                    ->label('User')
+                TextColumn::make('buyer_name')
+                    ->label('Pemesan')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('amount')
-                    ->label('Amount')
-                    ->formatStateUsing(fn(int $state): string => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->label('Jumlah')
+                    ->money('IDR')
                     ->sortable(),
 
                 TextColumn::make('method')
-                    ->label('Method')
+                    ->label('Pembayaran')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'midtrans' => 'info',
+                        'xendit' => 'warning',
+                        'manual' => 'gray',
+                        'cash' => 'success',
+                        'transfer' => 'primary',
+                        'qris' => 'secondary',
+                        default => 'gray',
+                    })
                     ->sortable(),
+
+                Tables\Columns\ImageColumn::make('receipt_path')
+                    ->label('Bukti')
+                    ->disk('public')
+                    ->height(60)
+                    ->width(60)
+                    ->defaultImageUrl(url('/images/eventgratis.png')),
 
                 BadgeColumn::make('status')
                     ->label('Status')
@@ -95,6 +132,8 @@ class PaymentResource extends Resource
                         'warning' => 'pending',
                         'success' => 'paid',
                         'danger' => 'failed',
+                        'gray' => 'expired',
+                        'info' => 'refunded',
                     ]),
 
                 TextColumn::make('created_at')
@@ -102,28 +141,30 @@ class PaymentResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
                         'paid' => 'Paid',
                         'failed' => 'Failed',
+                        'expired' => 'Expired',
+                        'refunded' => 'Refunded',
                     ]),
 
                 SelectFilter::make('method')
                     ->label('Method')
-                    ->options(
-                        Payment::query()
-                            ->distinct()
-                            ->pluck('method', 'method')
-                            ->toArray()
-                    ),
+                    ->options([
+                        'cash' => 'Cash',
+                        'transfer' => 'Bank Transfer',
+                        'qris' => 'QRIS',
+                    ]),
 
                 Filter::make('date')
-                    ->label('Rentang Tanggal')
+                    ->label('Date Range')
                     ->form([
-                        DatePicker::make('created_from')->label('Dari'),
-                        DatePicker::make('created_until')->label('Sampai'),
+                        DatePicker::make('created_from')->label('From'),
+                        DatePicker::make('created_until')->label('To'),
                     ])
                     ->query(
                         fn($query, array $data) => $query
@@ -132,24 +173,37 @@ class PaymentResource extends Resource
                     ),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->button()
+                    ->extraAttributes(['class' => 'bg-khb-blue hover:bg-khb-blue/80']),
 
-                Tables\Actions\Action::make('markAsPaid')
-                    ->label('Mark as Paid')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn(Payment $record): bool => $record->status === 'pending')
-                    ->action(fn(Payment $record) => $record->update(['status' => 'paid'])),
+                // Tables\Actions\Action::make('previewReceipt')
+                //     ->label('Preview Receipt')
+                //     ->icon('heroicon-o-eye')
+                //     ->button()
+                //     ->extraAttributes(['class' => 'bg-khb-blue hover:bg-khb-blue/80'])
+                //     ->visible(fn ($record) => $record->receipt_path)
+                //     ->modalContent(function ($record) {
+                //         return view('filament.custom.view-receipt', [
+                //             'receiptUrl' => Storage::url($record->receipt_path),
+                //         ]);
+                //     })
+                //     ->modalHeading('Receipt Preview')
+                //     ->modalSubmitAction(false)
+                //     ->modalCancelActionLabel('Close'),
 
-                Tables\Actions\Action::make('refund')
-                    ->label('Refund')
-                    ->icon('heroicon-o-currency-dollar')
-                    ->color('danger')
-                    ->visible(fn(Payment $record): bool => $record->status === 'paid')
-                    ->action(fn(Payment $record) => $record->update(['status' => 'failed'])),
+                // Tables\Actions\Action::make('refund')
+                //     ->label('Refund')
+                //     ->icon('heroicon-o-currency-dollar')
+                //     ->button()
+                //     ->extraAttributes(['class' => 'bg-red-600 hover:bg-red-700'])
+                //     ->visible(fn(Payment $record): bool => $record->status === 'paid')
+                //     ->action(fn(Payment $record) => $record->update(['status' => 'refunded'])),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
     }
 

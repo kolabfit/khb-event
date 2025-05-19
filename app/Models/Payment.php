@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
 
 class Payment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'ticket_id',
         'amount',
         'method',
         'transaction_id',
@@ -22,8 +24,13 @@ class Payment extends Model
         'receipt_path',
     ];
 
-    public function ticket()
+    public function tickets(): HasMany
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->hasMany(Ticket::class, 'payment_id', 'id');
+    }
+    
+    public function ticket(): HasOne
+    {
+        return $this->hasOne(Ticket::class, 'payment_id', 'id');
     }
 }

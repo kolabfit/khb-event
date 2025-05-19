@@ -13,7 +13,7 @@ class ListPayments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // CreateAction removed to hide "New Payment" button
         ];
     }
 }

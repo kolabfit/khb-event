@@ -13,7 +13,17 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\ViewAction::make()
+                ->button()
+                ->extraAttributes(['class' => 'bg-khb-blue hover:bg-khb-blue/80']),
+            Actions\DeleteAction::make()
+                ->button()
+                ->extraAttributes(['class' => 'bg-red-600 hover:bg-red-700']),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

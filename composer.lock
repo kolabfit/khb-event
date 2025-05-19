@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1295736fabeac392e72b72e01d9d9788",
+    "content-hash": "96f1754d5c006a881f547dce987c6425",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1564,16 +1564,16 @@
         },
         {
             "name": "endroid/qr-code",
-            "version": "6.0.7",
+            "version": "6.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/endroid/qr-code.git",
-                "reference": "de0e510509abf854e2218e4c77ed62321b27ea97"
+                "reference": "8102273afbcd5e3d95f1faaab2c5aa31e3637f61"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/endroid/qr-code/zipball/de0e510509abf854e2218e4c77ed62321b27ea97",
-                "reference": "de0e510509abf854e2218e4c77ed62321b27ea97",
+                "url": "https://api.github.com/repos/endroid/qr-code/zipball/8102273afbcd5e3d95f1faaab2c5aa31e3637f61",
+                "reference": "8102273afbcd5e3d95f1faaab2c5aa31e3637f61",
                 "shasum": ""
             },
             "require": {
@@ -1624,7 +1624,7 @@
             ],
             "support": {
                 "issues": "https://github.com/endroid/qr-code/issues",
-                "source": "https://github.com/endroid/qr-code/tree/6.0.7"
+                "source": "https://github.com/endroid/qr-code/tree/6.0.8"
             },
             "funding": [
                 {
@@ -1632,7 +1632,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-04-02T07:06:35+00:00"
+            "time": "2025-05-10T14:28:45+00:00"
         },
         {
             "name": "filament/actions",
@@ -2801,6 +2801,63 @@
                 "source": "https://github.com/kirschbaum-development/eloquent-power-joins/tree/4.1.0"
             },
             "time": "2025-02-12T11:14:14+00:00"
+        },
+        {
+            "name": "laracasts/flash",
+            "version": "3.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laracasts/flash.git",
+                "reference": "0ea47bfbf12a33113247c367798a34e519020f8d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laracasts/flash/zipball/0ea47bfbf12a33113247c367798a34e519020f8d",
+                "reference": "0ea47bfbf12a33113247c367798a34e519020f8d",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "~5.0|^6.0|^7.0|^8.0|^9.0|^10.0|^11.0|^12.0",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "dev-master",
+                "phpunit/phpunit": "^6.1|^9.5.10|^10.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Flash": "Laracasts\\Flash\\Flash"
+                    },
+                    "providers": [
+                        "Laracasts\\Flash\\FlashServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/Laracasts/Flash/functions.php"
+                ],
+                "psr-0": {
+                    "Laracasts\\Flash": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jeffrey Way",
+                    "email": "jeffrey@laracasts.com"
+                }
+            ],
+            "description": "Easy flash notifications",
+            "support": {
+                "source": "https://github.com/laracasts/flash/tree/3.2.4"
+            },
+            "time": "2025-02-06T14:43:27+00:00"
         },
         {
             "name": "laravel/framework",

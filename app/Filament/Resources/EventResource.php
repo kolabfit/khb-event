@@ -20,6 +20,8 @@ use Filament\Tables\Table as FilamentTable;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Actions\CreateAction;  // pastikan ini di-import
+use Filament\Tables\Columns\BadgeColumn;
+use App\Filament\Resources\EventResource\RelationManagers;
 
 class EventResource extends Resource
 {
@@ -93,8 +95,7 @@ class EventResource extends Resource
                 Toggle::make('is_paid')
                     ->label('Event Berbayar?')
                     ->default(true)
-                    ->reactive()  // <-- buat biar field lain bisa merespon perubahan secara langsung
-                    ->disabled(fn(bool $state): bool => !$state),
+                    ->reactive(),
 
                 TextInput::make('price')
                     ->label('Harga Tiket (IDR)')
@@ -152,7 +153,9 @@ class EventResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->url(fn($record) => route('filament.admin.resources.events.view', $record))
+                    ->openUrlInNewTab(false),
 
                 // Tables\Columns\IconColumn::make('is_paid')
                 //     ->label('Berbayar')
@@ -179,12 +182,25 @@ class EventResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable(),
 
+                Tables\Columns\BadgeColumn::make('status_label')
+                    ->label('Status')
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->colors([
+                        'danger' => 'ended',
+                        'warning' => 'draft',
+                        'success' => 'active',
+                        'info' => 'upcoming',
+                    ]),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y')
                     ->sortable(),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->button()
+                    ->extraAttributes(['class' => 'bg-blue-500 hover:bg-blue-600']),
                 Tables\Actions\EditAction::make()
                     ->button()
                     ->extraAttributes(['class' => 'bg-khb-green hover:bg-khb-green/80']),
@@ -203,6 +219,33 @@ class EventResource extends Resource
             'index' => Pages\ListEvents::route('/'),
             'create' => Pages\CreateEvent::route('/create'),
             'edit' => Pages\EditEvent::route('/{record}/edit'),
+            'view' => Pages\ViewEvent::route('/{record}'),
+        ];
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->orderByRaw("
+                CASE 
+                    WHEN end_date >= NOW() OR (end_date IS NULL AND start_date >= NOW()) THEN 0
+                    ELSE 1
+                END ASC
+            ")
+            ->orderByRaw("
+                CASE 
+                    WHEN end_date >= NOW() OR (end_date IS NULL AND start_date >= NOW()) THEN 
+                        COALESCE(start_date, end_date)
+                    ELSE NULL
+                END ASC
+            ")
+            ->orderBy('end_date', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\TicketsRelationManager::class,
         ];
     }
 }

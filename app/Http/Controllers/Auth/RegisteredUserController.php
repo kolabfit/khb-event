@@ -37,6 +37,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'avatar' => ['nullable', File::image()->max(1024)], // max 1MB
         ]);
@@ -44,6 +45,7 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
 
@@ -57,6 +59,11 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // Check if user is admin, redirect to admin panel
+        if ($user->hasRole('admin')) {
+            return redirect()->route('filament.admin.pages.dashboard');
+        }
 
         return redirect(RouteServiceProvider::HOME);
     }

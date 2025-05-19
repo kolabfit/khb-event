@@ -68,10 +68,10 @@ class Event extends Model
         return $this->hasManyThrough(
             Payment::class,
             Ticket::class,
-            'event_id',  // FK di tickets
-            'ticket_id', // FK di payments
-            'id',
-            'id'         // FK di events
+            'event_id',  // Foreign key on tickets table
+            'id',        // Foreign key on payments table
+            'id',        // Local key on events table
+            'payment_id' // Local key on tickets table
         );
     }
 
@@ -111,5 +111,35 @@ class Event extends Model
         }
 
         return 'Rp ' . number_format($price, 0, ',', '.');
+    }
+    
+    public function getStatusLabelAttribute(): string
+    {
+        $now = now();
+        $startDate = $this->start_date ? \Carbon\Carbon::parse($this->start_date) : null;
+        $endDate = $this->end_date ? \Carbon\Carbon::parse($this->end_date) : null;
+        
+        // If event has no start date, consider it as draft
+        if (!$startDate) {
+            return 'draft';
+        }
+        
+        // If event hasn't started yet
+        if ($startDate->isFuture()) {
+            return 'upcoming';
+        }
+        
+        // If event has started but hasn't ended (or no end date)
+        if ($startDate->isPast() && (!$endDate || $endDate->isFuture())) {
+            return 'active';
+        }
+        
+        // If event has ended
+        return 'ended';
+    }
+    
+    public function isEventActive(): bool
+    {
+        return in_array($this->status_label, ['upcoming', 'active']);
     }
 }

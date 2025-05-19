@@ -2,13 +2,20 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
-use Filament\Resources\Pages\ViewRecord;
 use App\Filament\Resources\UserResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewUser extends ViewRecord
 {
     protected static string $resource = UserResource::class;
 
-    // (Opsional) override judul halaman
-    protected static ?string $title = 'Profil User';
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make()
+                ->button()
+                ->extraAttributes(['class' => 'bg-khb-green hover:bg-khb-green/80']),
+        ];
+    }
 }

@@ -24,7 +24,7 @@ return new class extends Migration {
                 ->onDelete('cascade');
             $table->timestamp('purchased_at')->useCurrent();
             $table->decimal('price_paid', 12, 2);
-            $table->enum('status', ['pending', 'paid', 'cancelled'])
+            $table->enum('status', ['pending', 'paid', 'cancelled', 'used'])
                 ->default('pending');
             $table->string('qr_code_path')->nullable();
             $table->timestamps();

@@ -15,6 +15,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        @include('flash::message')
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
@@ -32,5 +33,15 @@
                 {{ $slot }}
             </main>
         </div>
+        <script>
+            setTimeout(function() {
+                var alerts = document.querySelectorAll('div.alert:not(.alert-important)');
+                alerts.forEach(function(alert) {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = 0;
+                    setTimeout(function() { alert.remove(); }, 500);
+                });
+            }, 3000);
+        </script>
     </body>
 </html>

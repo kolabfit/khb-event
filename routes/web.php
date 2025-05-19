@@ -10,6 +10,8 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\OrderController;
 use Inertia\Inertia;
+use App\Http\Controllers\TicketValidationController;
+use App\Http\Controllers\QrCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +55,12 @@ Route::middleware(['auth', 'role:admin'])
             [TicketController::class, 'download']
         )
             ->name('tickets.download');
+        
+        // Ticket validation routes
+        Route::get('/validate-ticket', [TicketValidationController::class, 'showValidationPage'])
+            ->name('admin.validate-ticket');
+        Route::post('/validate-ticket', [TicketValidationController::class, 'validateTicket'])
+            ->name('admin.validate-ticket.post');
     });
 
 Route::get('/filament/reports/export', [ReportExportController::class, 'export'])
@@ -96,10 +104,13 @@ Route::get('/dashboard', function () {
 
 Route::get('/detail-event', function (Request $request) {
     $event = Event::where('id', $request->query('id'))->with('user', 'categories')->first();
-    return Inertia::render('DetailEvent')->with(
-        ['event' => $event]
-    );
-})->middleware(['auth', 'verified'])->name('detail-events');
+    return Inertia::render('DetailEvent')->with([
+        'event' => $event,
+        'auth' => [
+            'user' => auth()->user(),
+        ],
+    ]);
+})->name('detail-events');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -146,5 +157,8 @@ Route::get('/events', function (Request $request) {
         'selectedCategory' => $request->category,
     ]);
 })->name('events');
+
+Route::get('/tickets/{ticket}/qr', [TicketController::class, 'showQrCode'])->name('tickets.qr');
+Route::get('/tickets/{ticket}/qr-code', [QrCodeController::class, 'generate'])->name('tickets.qr-code');
 
 require __DIR__ . '/auth.php';

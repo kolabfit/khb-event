@@ -2,23 +2,19 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\RelationManagers\EventsRelationManager;
-use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
-use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\MultiSelect;
-use Filament\Forms\Components\Password;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form as FilamentForm;
-use Filament\Resources\Resource;
-use Filament\Tables\Table as FilamentTable;
-use Filament\Tables;
-use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Columns\ToggleColumn;
-
-
+use Filament\Tables\Table;
+use Illuminate\Support\Facades\Hash;
+use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers\EventsRelationManager;
 
 class UserResource extends Resource
 {
@@ -28,77 +24,70 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Users';
     protected static ?int $navigationSort = 2;
 
-    public static function form(FilamentForm $form): FilamentForm
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 TextInput::make('name')
-                    ->label('Name')
                     ->required()
-                    ->maxLength(255)
-                    ->extraAttributes(['class' => 'bg-white']),
+                    ->maxLength(255),
 
                 TextInput::make('email')
-                    ->label('Email')
                     ->email()
                     ->required()
-                    ->unique(User::class, 'email', ignoreRecord: true)
-                    ->extraAttributes(['class' => 'bg-white']),
+                    ->unique(User::class, 'email', ignoreRecord: true),
 
-                TextInput::make('password')->password()
-                    ->label('Password')
+                TextInput::make('phone')
+                    ->tel()
+                    ->maxLength(20),
+
+                TextInput::make('password')
+                    ->password()
                     ->minLength(8)
                     ->dehydrated(fn($state) => filled($state))
                     ->dehydrateStateUsing(fn($state) => Hash::make($state))
-                    ->extraAttributes(['class' => 'bg-white']),
+                    ->required(fn (string $operation): bool => $operation === 'create'),
 
                 MultiSelect::make('roles')
-                    ->label('Roles')
                     ->relationship('roles', 'name')
-                    ->required()
-                    ->extraAttributes(['class' => 'bg-gray-50']),
-                // Toggle Active untuk Edit page
+                    ->required(),
+
                 Toggle::make('is_active')
                     ->label('Active')
-                    // hanya pada Edit, hide di Create
                     ->visible(fn ($livewire) => $livewire instanceof Pages\EditUser),
             ]);
     }
 
-    public static function table(FilamentTable $table): FilamentTable
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Name')
                     ->searchable()
-                    ->sortable()
-                    ->extraAttributes(['class' => 'px-4 py-2']),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->sortable()
-                    ->extraAttributes(['class' => 'px-4 py-2']),
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('phone')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('roles.name')
-                    ->label('Roles')
                     ->sortable()
-                    ->wrap()
-                    ->extraAttributes(['class' => 'px-4 py-2']),
+                    ->wrap(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Registered')
                     ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->extraAttributes(['class' => 'px-4 py-2']),
+                    ->sortable(),
 
-                Tables\Columns\ToggleColumn::make('is_active')
+                ToggleColumn::make('is_active')
                     ->label('Active')
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
-                    ->label('Role')
                     ->relationship('roles', 'name'),
             ])
             ->actions([
@@ -113,7 +102,9 @@ class UserResource extends Resource
                     ->extraAttributes(['class' => 'bg-red-600 hover:bg-red-700']),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
     }
 
@@ -128,9 +119,9 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            'view'   => Pages\ViewUser::route('/{record}'),
             'create' => Pages\CreateUser::route('/create'),
+            'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
-}
+} 

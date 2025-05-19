@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 
 class Ticket extends Model
 {
@@ -17,6 +19,10 @@ class Ticket extends Model
         'price_paid',
         'status',
         'qr_code_path',
+        'payment_id',
+        'participant_name',
+        'participant_email',
+        'participant_phone',
     ];
 
     public function event()
@@ -34,8 +40,20 @@ class Ticket extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function payment()
+    public function payment(): BelongsTo
     {
-        return $this->hasOne(Payment::class);
+        return $this->belongsTo(Payment::class, 'payment_id', 'id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\Payment::class, 'ticket_id');
+    }
+
+    public function getCustomTicketQrAttribute()
+    {
+        return [
+            'ticket' => $this,
+        ];
     }
 }
