@@ -1,8 +1,9 @@
-// resources/js/Pages/OrderPage.jsx
 import React, { useEffect } from 'react';
-import { useForm } from '@inertiajs/inertia-react';
+import { useForm } from '@inertiajs/react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Inertia } from '@inertiajs/inertia';
+import { Calendar, MapPin, Clock } from 'lucide-react'; // Import icons
 
 export default function OrderPage({ event, auth }) {
     const { data, setData, post, errors, processing } = useForm({
@@ -13,14 +14,32 @@ export default function OrderPage({ event, auth }) {
         participants: [{ fullname: '', email: '', phone: '' }],
     });
 
-    // REBUILD participants array whenever quantity atau toggle berubah
+    // Tampilkan informasi event untuk debugging
     useEffect(() => {
-        const qty = data.quantity;
-        // potong/preserve yang sudah ada
-        const arr = data.participants.slice(0, qty);
-        // extend jika kurang
-        while (arr.length < qty) {
-            arr.push({ fullname: '', email: '', phone: '' });
+        console.log("Data event yang diterima:", event);
+    }, []);
+
+    // Gunakan integer mentah, fallback ke 0 jika null
+    const rawPrice = event.price ?? 0;
+    const total = rawPrice * data.quantity;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        // Ambil harga mentah (number) atau 0 kalau gratis
+        const rawPrice = event.price != null ? Number(event.price) : 0;
+
+        if (rawPrice === 0) {
+            // Gratis: langsung catat order dan lompat ke success
+            post(route('order-event.order.store'), {
+                onSuccess: () => {
+                    // redirect ke dashboard atau halaman success
+                    Inertia.visit(route('dashboard'), { replace: true });
+                },
+            });
+        } else {
+            // Berbayar: lempar ke confirmPayment.jsx dengan data
+            post(route('order-event.order.store', { id: event.id, quantity: data.quantity }));
         }
         // autofill slot pertama kalau toggle on
         if (data.addSelfAsParticipant) {
@@ -52,6 +71,12 @@ export default function OrderPage({ event, auth }) {
         post(route('order-event.order.store'));
     };
 
+    // Handle kembali ke halaman detail event
+    const handleBack = () => {
+    const url = route('detail-events') + `?id=${event.id}`;
+    Inertia.visit(url, { preserveState: true });
+};
+
     return (
         <>
             <Navbar auth={auth} />
@@ -65,8 +90,41 @@ export default function OrderPage({ event, auth }) {
                     />
 
                     <div className="p-6 space-y-6">
-                        <h1 className="text-3xl font-bold">Pesan Tiket</h1>
-                        <p>Acara: <strong>{event.title}</strong></p>
+                        <div className="space-y-2">
+                            <h1 className="text-3xl font-bold">Pesan Tiket</h1>
+                            <p className="text-gray-600">
+                                Acara: <span className="font-medium">{event.title}</span>
+                            </p>
+                            
+                            {/* Tambahkan waktu dan lokasi event */}
+                            <div className="flex flex-wrap items-center text-gray-600 space-x-4 mt-2">
+                                <span className="flex items-center">
+                                    <Calendar className="w-4 h-4 mr-1" />
+                                    {event.start_date ? new Date(event.start_date).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                    }) : "Tanggal belum ditentukan"}
+                                </span>
+                                <span className="flex items-center">
+                                    <Clock className="w-4 h-4 mr-1" />
+                                    {event.start_date ? new Date(event.start_date).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }) : "00:00"}{" "}
+                                    -{" "}
+                                    {event.end_date ? new Date(event.end_date).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }) : "00:00"}
+                                </span>
+                            </div>
+                            <div className="text-gray-600">
+                                <span className="flex items-center">
+                                    <MapPin className="w-4 h-4 mr-1" /> {event.location || "Lokasi belum ditentukan"}
+                                </span>
+                            </div>
+                        </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* 1) Jumlah Tiket */}
@@ -126,60 +184,15 @@ export default function OrderPage({ event, auth }) {
                                 </div>
                             </div>
 
-                            {/* 2) Data Pemesan */}
-                            <div className="p-4 border rounded bg-gray-50 space-y-1">
-                                <h2 className="font-semibold">Data Pemesan</h2>
-                                <div className="flex"><span className="w-24 font-medium">Nama:</span><span>{auth.user.name}</span></div>
-                                <div className="flex"><span className="w-24 font-medium">Email:</span><span>{auth.user.email}</span></div>
-                                <div className="flex"><span className="w-24 font-medium">No. HP:</span><span>{auth.user.phone || '-'}</span></div>
-                            </div>
-
-                            {/* 3) Toggle Autofill */}
-                            <div className="flex items-center space-x-3">
-                                <span className="font-medium">Tambahkan sebagai peserta (Anda sendiri)</span>
-                                <label htmlFor="add-self-toggle" className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        id="add-self-toggle"
-                                        type="checkbox"
-                                        className="sr-only peer"
-                                        checked={data.addSelfAsParticipant}
-                                        onChange={e => setData('addSelfAsParticipant', e.target.checked)}
-                                    />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer-checked:bg-green-600 transition-colors"></div>
-                                    <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
-                                </label>
-                            </div>
-
-                            {/* 4) Form Biodata Peserta */}
-                            <div className="space-y-4">
-                                <h2 className="font-semibold">Detail Peserta</h2>
-                                {data.participants.map((p, idx) => (
-                                    <div key={idx} className="p-4 border rounded space-y-3">
-                                        <p className="text-sm font-medium text-gray-600">Peserta {idx + 1}</p>
-
-                                        {['fullname', 'email', 'phone'].map(field => (
-                                            <div key={field}>
-                                                <label className="block text-sm">
-                                                    {field === 'fullname' ? 'Nama Lengkap' : field === 'email' ? 'Email' : 'No. HP'}
-                                                </label>
-                                                <input
-                                                    type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'}
-                                                    value={p[field]}
-                                                    onChange={e => handleChangeParticipant(idx, field, e.target.value)}
-                                                    required
-                                                    className="mt-1 w-full border-gray-300 rounded"
-                                                />
-                                                {errors[`participants.${idx}.${field}`] && (
-                                                    <p className="text-red-600 text-sm">{errors[`participants.${idx}.${field}`]}</p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* 5) Submit */}
-                            <div className="flex justify-end">
+                            {/* Tombol - Tambahkan tombol Kembali di sebelah kiri tombol Bayar */}
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={handleBack}
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                                >
+                                    Kembali
+                                </button>
                                 <button
                                     type="submit"
                                     disabled={processing}

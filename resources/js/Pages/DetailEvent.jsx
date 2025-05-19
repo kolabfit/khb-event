@@ -1,9 +1,9 @@
 // resources/js/Pages/EventDetailPage.jsx
-import React from 'react';
-import { Calendar, MapPin, Clock } from 'lucide-react';
-import Navbar from '@/components/Navbar';
-import { Link } from '@inertiajs/inertia-react';
-import Footer from '@/components/Footer';
+import React from "react";
+import { Calendar, MapPin, Clock } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { Link } from "@inertiajs/react";
+import Footer from "@/components/Footer";
 
 export default function EventDetailPage({ event, auth }) {
     // Hitung harga mentah, default ke 0 bila null
@@ -11,19 +11,22 @@ export default function EventDetailPage({ event, auth }) {
     // Siapkan label: rupiah bila >0, "Gratis" bila 0
     const priceLabel =
         rawPrice > 0
-            ? rawPrice.toLocaleString('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-            })
-            : 'Gratis';
+            ? rawPrice.toLocaleString("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                  minimumFractionDigits: 0,
+              })
+            : "Gratis";
 
     return (
         <>
             <Navbar auth={auth} />
             <div className="container mx-auto px-4 py-8 mb-12">
                 {/* Breadcrumb */}
-                <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+                <nav
+                    className="text-sm text-gray-500 mb-6"
+                    aria-label="Breadcrumb"
+                >
                     <ol className="inline-flex items-center space-x-2">
                         <li>
                             <Link href="/" className="hover:underline">
@@ -37,7 +40,9 @@ export default function EventDetailPage({ event, auth }) {
                             </Link>
                         </li>
                         <li>›</li>
-                        <li className="text-gray-800 font-medium">{event.title}</li>
+                        <li className="text-gray-800 font-medium">
+                            {event.title}
+                        </li>
                     </ol>
                 </nav>
 
@@ -59,28 +64,38 @@ export default function EventDetailPage({ event, auth }) {
                             <div className="flex flex-wrap items-center text-gray-600 space-x-4">
                                 <span className="flex items-center">
                                     <Calendar className="w-4 h-4 mr-1" />
-                                    {new Date(event.start_date).toLocaleDateString('id-ID', {
-                                        day: 'numeric',
-                                        month: 'long',
-                                        year: 'numeric',
+                                    {new Date(
+                                        event.start_date
+                                    ).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
                                     })}
                                 </span>
                                 <span className="flex items-center">
                                     <Clock className="w-4 h-4 mr-1" />
-                                    {new Date(event.start_date).toLocaleTimeString('id-ID', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}{' '}
-                                    -{' '}
-                                    {new Date(event.end_date).toLocaleTimeString('id-ID', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
+                                    {new Date(
+                                        event.start_date
+                                    ).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}{" "}
+                                    -{" "}
+                                    {new Date(
+                                        event.end_date
+                                    ).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
                                     })}
                                 </span>
+                            </div>
+                            <div className="mt-2 text-gray-600">
                                 <span className="flex items-center">
-                                    <MapPin className="w-4 h-4 mr-1" /> {event.location}
+                                    <MapPin className="w-4 h-4 mr-1" />{" "}
+                                    {event.location}
                                 </span>
                             </div>
+
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {event.categories.map((cat) => (
                                     <span
@@ -95,7 +110,9 @@ export default function EventDetailPage({ event, auth }) {
 
                         <div
                             className="prose prose-lg text-gray-700"
-                            dangerouslySetInnerHTML={{ __html: event.description }}
+                            dangerouslySetInnerHTML={{
+                                __html: event.description,
+                            }}
                         />
                     </div>
 
@@ -109,8 +126,12 @@ export default function EventDetailPage({ event, auth }) {
                                 className="w-12 h-12 rounded-full object-cover"
                             />
                             <div>
-                                <p className="text-sm text-gray-500">Diselenggarakan oleh</p>
-                                <p className="font-medium text-gray-800">{event.user.name}</p>
+                                <p className="text-sm text-gray-500">
+                                    Diselenggarakan oleh
+                                </p>
+                                <p className="font-medium text-gray-800">
+                                    {event.user.name}
+                                </p>
                             </div>
                         </div>
 
@@ -125,7 +146,9 @@ export default function EventDetailPage({ event, auth }) {
                                     <span className="text-lg font-medium text-gray-800">
                                         {event.quota} kursi
                                     </span>
-                                    <p className="text-sm text-gray-500">tersisa</p>
+                                    <p className="text-sm text-gray-500">
+                                        tersisa
+                                    </p>
                                 </div>
                                 <span className="text-lg font-semibold text-gray-800">
                                     {priceLabel}
@@ -155,15 +178,26 @@ export default function EventDetailPage({ event, auth }) {
 
                         {/* Share Section */}
                         <div className="bg-white rounded-lg shadow-sm p-4">
-                            <p className="text-sm text-gray-600 mb-2">Bagikan:</p>
+                            <p className="text-sm text-gray-600 mb-2">
+                                Bagikan:
+                            </p>
                             <div className="flex space-x-3">
-                                <a href="#" className="text-blue-600 hover:text-blue-800">
+                                <a
+                                    href="#"
+                                    className="text-blue-600 hover:text-blue-800"
+                                >
                                     Facebook
                                 </a>
-                                <a href="#" className="text-blue-400 hover:text-blue-600">
+                                <a
+                                    href="#"
+                                    className="text-blue-400 hover:text-blue-600"
+                                >
                                     Twitter
                                 </a>
-                                <a href="#" className="text-pink-500 hover:text-pink-700">
+                                <a
+                                    href="#"
+                                    className="text-pink-500 hover:text-pink-700"
+                                >
                                     Instagram
                                 </a>
                             </div>
