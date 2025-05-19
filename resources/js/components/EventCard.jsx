@@ -56,14 +56,23 @@ const EventCards = ({ dataevent }) => {
                 <div className="my-3 border-t border-gray-200" />
 
                 {/* Organizer */}
-                <div className="flex items-center mt-2 mb-2">
-                  <img
-                    src={event.user.avatar}
-                    alt={event.user.name}
-                    className="w-7 h-7 rounded-full object-cover"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">
-                    {event.user.name}
+                <div className="flex items-center justify-between mt-2 mb-2">
+                  <div className="flex items-center">
+                    <img
+                      src={event.user.avatar}
+                      alt={event.user.name}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      {event.user.name}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    Dibuat {new Date(event.created_at).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
                   </span>
                 </div>
               </div>

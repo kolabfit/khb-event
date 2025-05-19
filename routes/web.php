@@ -13,6 +13,10 @@ use App\Http\Controllers\OrderController;
 use Inertia\Inertia;
 use App\Http\Controllers\TicketValidationController;
 use App\Http\Controllers\QrCodeController;
+use App\Http\Controllers\PaymentHistoryController;
+use App\Http\Controllers\UserTicketDownloadController;
+use App\Http\Controllers\PaymentDownloadController;
+use App\Http\Controllers\EventRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,7 +60,7 @@ Route::middleware(['auth', 'role:admin'])
             [TicketController::class, 'download']
         )
             ->name('tickets.download');
-        
+
         // Ticket validation routes
         Route::get('/validate-ticket', [TicketValidationController::class, 'showValidationPage'])
             ->name('admin.validate-ticket');
@@ -127,22 +131,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // POST simpan order
     Route::post('/order-event/order', [OrderController::class, 'store'])
         ->name('order-event.order.store');
-});
 
-// routes/web.php
-Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/my-tickets/{ticket}/download', [UserTicketDownloadController::class, 'download'])
+        ->name('user.tickets.download');
+
     Route::get('/payments/{ticket}/confirm', [OrderController::class, 'confirm'])
         ->name('payments.confirm');
     Route::post('/payments/confirm', [OrderController::class, 'confirmStore'])
         ->name('payments.confirm.store');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Route lainnya...
+    Route::get('/payments/{payment}/download', PaymentDownloadController::class)
+        ->name('user.payments.download');
 
     Route::get('/event-history', [EventHistoryController::class, 'index'])->name('event.history');
+    Route::get('/payment-history', [PaymentHistoryController::class, 'index'])->name('payment.history');
+    Route::post('/payment-history/confirm', [EventHistoryController::class, 'confirmStore'])
+        ->name('payment.history.confirm.store');
+    Route::get('/payment-history/{payment}', [EventHistoryController::class, 'show'])->name('payment.history.show');
 });
-
 
 // Halaman list events, optional filter ?category=NamaKategori
 Route::get('/events', function (Request $request) {
@@ -168,5 +173,9 @@ Route::get('/events', function (Request $request) {
 
 Route::get('/tickets/{ticket}/qr', [TicketController::class, 'showQrCode'])->name('tickets.qr');
 Route::get('/tickets/{ticket}/qr-code', [QrCodeController::class, 'generate'])->name('tickets.qr-code');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/event-requests', [EventRequestController::class, 'store'])->name('event-requests.store');
+});
 
 require __DIR__ . '/auth.php';

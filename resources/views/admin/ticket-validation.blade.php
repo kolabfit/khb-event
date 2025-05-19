@@ -34,6 +34,11 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
+        .result-container.used-ticket {
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
         .ticket-info {
             margin-top: 15px;
             padding: 15px;
@@ -155,6 +160,10 @@
                 if (data.success) {
                     resultDiv.className = 'result-container success';
                     resultTitle.textContent = 'Validasi Berhasil';
+                    resultMessage.textContent = data.message;
+                } else if (data.success === 'used') {
+                    resultDiv.className = 'result-container used-ticket';
+                    resultTitle.textContent = 'Tiket Sudah Digunakan';
                     resultMessage.textContent = data.message;
                 } else {
                     resultDiv.className = 'result-container error';

@@ -14,32 +14,14 @@ export default function OrderPage({ event, auth }) {
         participants: [{ fullname: '', email: '', phone: '' }],
     });
 
-    // Tampilkan informasi event untuk debugging
+    // REBUILD participants array whenever quantity atau toggle berubah
     useEffect(() => {
-        console.log("Data event yang diterima:", event);
-    }, []);
-
-    // Gunakan integer mentah, fallback ke 0 jika null
-    const rawPrice = event.price ?? 0;
-    const total = rawPrice * data.quantity;
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        // Ambil harga mentah (number) atau 0 kalau gratis
-        const rawPrice = event.price != null ? Number(event.price) : 0;
-
-        if (rawPrice === 0) {
-            // Gratis: langsung catat order dan lompat ke success
-            post(route('order-event.order.store'), {
-                onSuccess: () => {
-                    // redirect ke dashboard atau halaman success
-                    Inertia.visit(route('dashboard'), { replace: true });
-                },
-            });
-        } else {
-            // Berbayar: lempar ke confirmPayment.jsx dengan data
-            post(route('order-event.order.store', { id: event.id, quantity: data.quantity }));
+        const qty = data.quantity;
+        // potong/preserve yang sudah ada
+        const arr = data.participants.slice(0, qty);
+        // extend jika kurang
+        while (arr.length < qty) {
+            arr.push({ fullname: '', email: '', phone: '' });
         }
         // autofill slot pertama kalau toggle on
         if (data.addSelfAsParticipant) {
@@ -184,6 +166,60 @@ export default function OrderPage({ event, auth }) {
                                 </div>
                             </div>
 
+                            {/* 2) Data Pemesan */}
+                            <div className="p-4 border rounded bg-gray-50 space-y-1">
+                                <h2 className="font-semibold">Data Pemesan</h2>
+                                <div className="flex"><span className="w-24 font-medium">Nama:</span><span>{auth.user.name}</span></div>
+                                <div className="flex"><span className="w-24 font-medium">Email:</span><span>{auth.user.email}</span></div>
+                                <div className="flex"><span className="w-24 font-medium">No. HP:</span><span>{auth.user.phone || '-'}</span></div>
+                            </div>
+
+                            {/* 3) Toggle Autofill */}
+                            <div className="flex items-center space-x-3">
+                                <span className="font-medium">Tambahkan sebagai peserta (Anda sendiri)</span>
+                                <label htmlFor="add-self-toggle" className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        id="add-self-toggle"
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={data.addSelfAsParticipant}
+                                        onChange={e => setData('addSelfAsParticipant', e.target.checked)}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer-checked:bg-green-600 transition-colors"></div>
+                                    <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+                                </label>
+                            </div>
+
+                            {/* 4) Form Biodata Peserta */}
+                            <div className="space-y-4">
+                                <h2 className="font-semibold">Detail Peserta</h2>
+                                {data.participants.map((p, idx) => (
+                                    <div key={idx} className="p-4 border rounded space-y-3">
+                                        <p className="text-sm font-medium text-gray-600">Peserta {idx + 1}</p>
+
+                                        {['fullname', 'email', 'phone'].map(field => (
+                                            <div key={field}>
+                                                <label className="block text-sm">
+                                                    {field === 'fullname' ? 'Nama Lengkap' : field === 'email' ? 'Email' : 'No. HP'}
+                                                </label>
+                                                <input
+                                                    type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'}
+                                                    value={p[field]}
+                                                    onChange={e => handleChangeParticipant(idx, field, e.target.value)}
+                                                    required
+                                                    className="mt-1 w-full border-gray-300 rounded"
+                                                />
+                                                {errors[`participants.${idx}.${field}`] && (
+                                                    <p className="text-red-600 text-sm">{errors[`participants.${idx}.${field}`]}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* 5) Submit */}
+                     
                             {/* Tombol - Tambahkan tombol Kembali di sebelah kiri tombol Bayar */}
                             <div className="flex justify-end space-x-4">
                                 <button

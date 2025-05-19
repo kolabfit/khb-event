@@ -21,9 +21,9 @@ export default function HeroSection() {
               >
                 Jelajahi Event
               </Link>
-              <button className="px-6 py-3 bg-white text-purple-700 font-semibold rounded-md hover:bg-gray-100 transition">
+              {/* <button className="px-6 py-3 bg-white text-purple-700 font-semibold rounded-md hover:bg-gray-100 transition">
                 Buat Event Sekarang
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
