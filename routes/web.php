@@ -1,22 +1,23 @@
 <?php
 
-use App\Http\Controllers\EventHistoryController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentDownloadController;
+use App\Http\Controllers\EventHistoryController;
+use App\Http\Controllers\EventRequestController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use App\Models\Category;
 use App\Models\Event;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ReportExportController;
-use App\Http\Controllers\OrderController;
-use Inertia\Inertia;
 use App\Http\Controllers\TicketValidationController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\UserTicketDownloadController;
-use App\Http\Controllers\PaymentDownloadController;
-use App\Http\Controllers\EventRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,18 +30,13 @@ use App\Http\Controllers\EventRequestController;
 |
 */
 
-Route::get('/', function () {
-    $data = Event::all()->load('user');
-    $category = Category::all();
-    return Inertia::render('DashboardUser')->with(
-        [
-            'dataevent' => $data,
-            'category' => $category,
-            'canLogin' => Route::has('login'),
-            'canRegister' => Route::has('register'),
-        ]
-    );
-})->middleware(['guest'])->name('home');
+// Home route with search functionality
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Event Request Routes
+Route::post('/api/event-requests', [EventRequestController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('event-requests.store');
 
 // Admin-only
 // Route::middleware(['auth','role:admin'])->get('/admin', function () {
@@ -135,7 +131,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-tickets/{ticket}/download', [UserTicketDownloadController::class, 'download'])
         ->name('user.tickets.download');
 
-    Route::get('/payments/{ticket}/confirm', [OrderController::class, 'confirm'])
+    Route::get('/payments/{ticket}/confirm', [OrderController::class, 'showPaymentConfirmation'])
         ->name('payments.confirm');
     Route::post('/payments/confirm', [OrderController::class, 'confirmStore'])
         ->name('payments.confirm.store');
@@ -173,9 +169,5 @@ Route::get('/events', function (Request $request) {
 
 Route::get('/tickets/{ticket}/qr', [TicketController::class, 'showQrCode'])->name('tickets.qr');
 Route::get('/tickets/{ticket}/qr-code', [QrCodeController::class, 'generate'])->name('tickets.qr-code');
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/api/event-requests', [EventRequestController::class, 'store'])->name('event-requests.store');
-});
 
 require __DIR__ . '/auth.php';

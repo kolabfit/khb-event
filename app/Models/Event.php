@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\TicketType;
 use App\Models\Ticket;
 use App\Models\Payment;
+use App\Models\QrisSetting;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,7 @@ class Event extends Model
         'thumbnail',
         'price',
         'is_paid',
+        'qris_setting_id',
     ];
 
     public function user()
@@ -73,6 +75,11 @@ class Event extends Model
             'id',        // Local key on events table
             'payment_id' // Local key on tickets table
         );
+    }
+
+    public function qrisSetting(): BelongsTo
+    {
+        return $this->belongsTo(QrisSetting::class);
     }
 
     public function getThumbnailAttribute(): string

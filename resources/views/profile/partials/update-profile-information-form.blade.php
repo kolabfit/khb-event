@@ -24,7 +24,7 @@
 
             <div class="flex items-center mb-4">
     @if (Auth::user()->avatar)
-        <img src="{{ asset('storage/' . Auth::user()->avatar) }}"
+        <img src="{{ asset( Auth::user()->avatar) }}"
             alt="Avatar"
             class="w-16 h-16 rounded-full object-cover mr-4">
     @endif

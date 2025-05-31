@@ -19,6 +19,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
 
 class PaymentResource extends Resource
 {
@@ -177,28 +179,36 @@ class PaymentResource extends Resource
                     ->button()
                     ->extraAttributes(['class' => 'bg-khb-blue hover:bg-khb-blue/80']),
 
-                // Tables\Actions\Action::make('previewReceipt')
-                //     ->label('Preview Receipt')
-                //     ->icon('heroicon-o-eye')
-                //     ->button()
-                //     ->extraAttributes(['class' => 'bg-khb-blue hover:bg-khb-blue/80'])
-                //     ->visible(fn ($record) => $record->receipt_path)
-                //     ->modalContent(function ($record) {
-                //         return view('filament.custom.view-receipt', [
-                //             'receiptUrl' => Storage::url($record->receipt_path),
-                //         ]);
-                //     })
-                //     ->modalHeading('Receipt Preview')
-                //     ->modalSubmitAction(false)
-                //     ->modalCancelActionLabel('Close'),
+                Action::make('refund')
+                    ->label('Refund')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Refund')
+                    ->modalDescription('Apakah Anda yakin ingin melakukan refund untuk pembayaran ini?')
+                    ->modalSubmitActionLabel('Ya, Refund')
+                    ->modalCancelActionLabel('Batal')
+                    ->visible(fn (Payment $record): bool => $record->status === 'paid')
+                    ->action(function (Payment $record): void {
+                        $record->update(['status' => 'refunded']);
+                        
+                        if ($record->tickets) {
+                            $record->tickets()->update(['status' => 'cancelled']);
+                            
+                            $ticketCount = $record->tickets()->count();
+                            if ($ticketCount > 0) {
+                                $firstTicket = $record->tickets()->first();
+                                if ($firstTicket && $firstTicket->event) {
+                                    $firstTicket->event->increment('quota', $ticketCount);
+                                }
+                            }
+                        }
 
-                // Tables\Actions\Action::make('refund')
-                //     ->label('Refund')
-                //     ->icon('heroicon-o-currency-dollar')
-                //     ->button()
-                //     ->extraAttributes(['class' => 'bg-red-600 hover:bg-red-700'])
-                //     ->visible(fn(Payment $record): bool => $record->status === 'paid')
-                //     ->action(fn(Payment $record) => $record->update(['status' => 'refunded'])),
+                        Notification::make()
+                            ->title('Pembayaran berhasil di-refund')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

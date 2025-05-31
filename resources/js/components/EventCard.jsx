@@ -2,7 +2,15 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 
-const EventCards = ({ dataevent }) => {
+const EventCards = ({ dataevent = [] }) => {
+  if (!dataevent || dataevent.length === 0) {
+    return (
+      <div className="col-span-4 text-center py-8 text-gray-500">
+        Tidak ada event yang tersedia
+      </div>
+    );
+  }
+
   return (
     <>
       {dataevent.map((event) => {
@@ -59,12 +67,12 @@ const EventCards = ({ dataevent }) => {
                 <div className="flex items-center justify-between mt-2 mb-2">
                   <div className="flex items-center">
                     <img
-                      src={event.user.avatar}
-                      alt={event.user.name}
+                      src={event.user?.avatar}
+                      alt={event.user?.name}
                       className="w-7 h-7 rounded-full object-cover"
                     />
                     <span className="ml-2 text-sm text-gray-700">
-                      {event.user.name}
+                      {event.user?.name}
                     </span>
                   </div>
                   <span className="text-sm text-gray-500">

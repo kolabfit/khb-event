@@ -63,8 +63,8 @@ class RegisteredUserController extends Controller
         // Check if user is admin, redirect to admin panel
         if ($user->hasRole('admin')) {
             return redirect()->route('filament.admin.pages.dashboard');
+        } else {
+            return redirect()->route('user.dashboard');
         }
-
-        return redirect(RouteServiceProvider::HOME);
     }
 }

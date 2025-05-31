@@ -1,7 +1,7 @@
-import Footer from '@/components/Footer';
-import HeroSection from '@/components/HeroSection';
-import Navbar from '@/components/Navbar';
-import EventPage from '@/components/EventPage';
+import Footer from '@/Components/Footer';
+import HeroSection from '@/Components/HeroSection';
+import Navbar from '@/Components/Navbar';
+import EventPage from '@/Components/EventPage';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 

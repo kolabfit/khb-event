@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,12 +10,21 @@ import DynamicHeroIcon from '@/components/DynamicHeroIcon';
 import { Link } from '@inertiajs/react';
 import EventCards from '@/components/EventCard';
 
-export default function EventPage({ dataevent, categories, events }) {
+export default function EventPage({ dataevent, categories = [], events = [] }) {
   const [priceFilter, setPriceFilter] = useState('all'); // 'all', 'free', 'paid'
   const [showRecentOnly, setShowRecentOnly] = useState(false);
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest', 'oldest'
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const scrollRef = useRef(null);
+
+  // Debug props
+  useEffect(() => {
+    console.log('EventPage Props:', {
+      dataevent,
+      categories,
+      events
+    });
+  }, [dataevent, categories, events]);
 
   const scrollLeft = () => {
     scrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
@@ -26,7 +35,14 @@ export default function EventPage({ dataevent, categories, events }) {
   };
 
   const filteredEvents = useMemo(() => {
-    let filtered = [...dataevent];
+    // Debug dataevent
+    console.log('Filtering events:', dataevent);
+
+    // Ensure we're working with an array
+    let filtered = Array.isArray(dataevent) ? [...dataevent] : 
+                  (dataevent?.data ? [...dataevent.data] : []);
+
+    console.log('Filtered events before processing:', filtered);
 
     if (priceFilter === 'free') {
       filtered = filtered.filter(event => event.price === 0 || event.price === '0' || event.price === 'Gratis');
@@ -46,6 +62,7 @@ export default function EventPage({ dataevent, categories, events }) {
       return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
     });
 
+    console.log('Filtered events after processing:', filtered);
     return filtered;
   }, [dataevent, priceFilter, showRecentOnly, sortOrder]);
 
@@ -178,8 +195,12 @@ export default function EventPage({ dataevent, categories, events }) {
       </div>
 
       {/* Event Cards */}
-      <div className="grid grid-cols-4 gap-7">
-        <EventCards dataevent={filteredEvents} catevent={events} dataevents={filteredEvents.slice(0, 8)} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7">
+        <EventCards 
+          dataevent={filteredEvents} 
+          catevent={events} 
+          dataevents={filteredEvents.slice(0, 8)} 
+        />
       </div>
 
       {/* Tombol Jelajah */}

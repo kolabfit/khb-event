@@ -6,6 +6,7 @@ use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\TicketSalesChart;
 use App\Filament\Widgets\TicketScannerWidget;
 use App\Filament\Widgets\TopEventsWidget;
+use App\Filament\Widgets\PaymentStatsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -49,7 +50,8 @@ class AdminPanelProvider extends PanelProvider
             // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 TicketScannerWidget::class,
-                StatsOverview::class,
+                PaymentStatsWidget::class,
+                // StatsOverview::class,
                 TicketSalesChart::class,
                 TopEventsWidget::class,
             ])

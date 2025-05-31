@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/inertia-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-export default function PaymentConfirmation({ ticket, auth }) {
+export default function PaymentConfirmation({ ticket, auth, qris }) {
     const { data, setData, post, processing, errors } = useForm({
         ticket_id: ticket.id,
         receipt: null,
@@ -36,12 +36,23 @@ export default function PaymentConfirmation({ ticket, auth }) {
                     <h1 className="text-2xl font-bold text-center">Konfirmasi Pembayaran</h1>
 
                     {/* QRIS */}
-                    <div className="flex justify-center">
-                        <img
-                            src="/images/static-qr.jpeg"
-                            alt="Kode QRIS"
-                            className="w-64 h-64 object-contain"
-                        />
+                    <div className="flex flex-col items-center space-y-4">
+                        {qris ? (
+                            <>
+                                <img
+                                    src={qris.qris_image_path}
+                                    alt="Kode QRIS"
+                                    className="w-64 h-64 object-contain"
+                                />
+                                <div className="text-center text-sm text-gray-600">
+                                    <p>Merchant: {qris.merchant_name}</p>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="text-center text-red-600">
+                                QRIS tidak tersedia saat ini. Silakan hubungi admin.
+                            </div>
+                        )}
                     </div>
 
                     {/* Detail */}
@@ -65,7 +76,7 @@ export default function PaymentConfirmation({ ticket, auth }) {
                         </p>
                     </div>
 
-                    <form onSubmit={handleUpload} encodeType="multipart/form-data" className="space-y-4">
+                    <form onSubmit={handleUpload} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Upload Bukti Pembayaran

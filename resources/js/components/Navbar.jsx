@@ -1,26 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { NotepadText, X } from 'lucide-react';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-
-// Configure axios defaults
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 export default function Navbar({ auth }) {
   const user = auth?.user;
-
-  // Set up axios defaults
-  useEffect(() => {
-    // Add CSRF token to all requests
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (token) {
-      axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
-    }
-    // Add Accept header for JSON responses
-    axios.defaults.headers.common['Accept'] = 'application/json';
-  }, []);
 
   // State & ref for the avatar dropdown
   const [open, setOpen] = useState(false);
@@ -29,7 +12,7 @@ export default function Navbar({ auth }) {
   // State for the request event modal
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [requestForm, setRequestForm] = useState({
-    nama: user?.name || '',
+    nama: '',
     penanggungjawab: '',
     kontak: '',
     alamat: '',
@@ -38,15 +21,6 @@ export default function Navbar({ auth }) {
     tanggal: ''
   });
   const modalRef = useRef(null);
-
-  // Update form when modal opens to ensure we have latest user data
-  const handleOpenModal = () => {
-    setRequestForm(prev => ({
-      ...prev,
-      nama: user?.name || ''
-    }));
-    setShowRequestModal(true);
-  };
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -58,67 +32,20 @@ export default function Navbar({ auth }) {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('/api/event-requests', requestForm);
-      
-      // Show success message with SweetAlert2
-      await Swal.fire({
-        title: 'Request dikirim!',
-        text: 'Terimakasih atas pengajuan event Anda',
-        icon: 'success',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#8A2BE2',
-        timer: 3000,
-        timerProgressBar: true,
-        showClass: {
-          popup: 'animate__animated animate__fadeInDown'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOutUp'
-        }
-      });
-
-      setShowRequestModal(false);
-      setRequestForm({
-        nama: user?.name || '',
-        penanggungjawab: '',
-        kontak: '',
-        alamat: '',
-        namakegiatan: '',
-        deskripsi: '',
-        tanggal: ''
-      });
-    } catch (error) {
-      console.error('Error submitting form:', error.response?.data || error);
-      
-      // Show detailed error message
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || 'Terjadi kesalahan saat mengirim request event. Silakan coba lagi.';
-
-      // Show validation errors if any
-      if (error.response?.data?.errors) {
-        const validationErrors = Object.values(error.response.data.errors).flat().join('\n');
-        await Swal.fire({
-          title: 'Validasi Gagal',
-          text: validationErrors,
-          icon: 'error',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#8A2BE2'
-        });
-      } else {
-        // Show general error
-        await Swal.fire({
-          title: 'Oops!',
-          text: errorMessage,
-          icon: 'error',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#8A2BE2'
-        });
-      }
-    }
+    console.log('Form submitted:', requestForm);
+    alert('Request event berhasil dikirim!');
+    setShowRequestModal(false);
+    setRequestForm({
+      nama: '',
+      penanggungjawab: '',
+      kontak: '',
+      alamat: '',
+      namakegiatan: '',
+      deskripsi: '',
+      tanggal: ''
+    });
   };
 
   // Close dropdown when clicking outside
@@ -138,6 +65,7 @@ export default function Navbar({ auth }) {
   // Check if routes exist before using them
   const dashboardRoute = route().has('dashboard') ? route('dashboard') : '/';
   const historyRoute = route().has('history') ? route('history') : '/event-history';
+  const profileEditRoute = route('profile.edit');
 
   return (
     <nav className="bg-white shadow-sm">
@@ -149,15 +77,13 @@ export default function Navbar({ auth }) {
               <img src="/logo/khb.png" alt="KHB Logo" style={{ width: '100px', height: '40px' }}/>
             </Link>
             
-            {/* Request Event Button - Only show if user is logged in */}
-            {user && (
-              <button 
-                onClick={handleOpenModal}
-                className="text-gray-700 font-medium hover:text-purple-600 transition duration-200"
-              >
-                Request Event
-              </button>
-            )}
+            {/* Request Event Button */}
+            <button 
+              onClick={() => setShowRequestModal(true)}
+              className="text-gray-700 font-medium hover:text-purple-600 transition duration-200"
+            >
+              Request Event
+            </button>
           </div>
 
           {/* Search Bar */}
@@ -185,15 +111,13 @@ export default function Navbar({ auth }) {
 
           {/* History Icon and User Avatar / Login */}
           <div className="flex items-center space-x-5">
-            {/* History Icon - Only show if user is logged in */}
-            {user && (
-              <Link 
-                href={historyRoute}
-                className="text-gray-600 hover:text-purple-600 transition duration-200"
-              >
-                <NotepadText className="w-6 h-6" />
-              </Link>
-            )}
+            {/* History Icon */}
+            <Link 
+              href={historyRoute}
+              className="text-gray-600 hover:text-purple-600 transition duration-200"
+            >
+              <NotepadText className="w-6 h-6" />
+            </Link>
 
             {/* User Avatar / Login */}
             {!user ? (
@@ -227,7 +151,7 @@ export default function Navbar({ auth }) {
                 {open && (
                   <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md overflow-hidden z-10">
                     <Link
-                      href={route('profile.edit')}
+                      href={profileEditRoute}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Profile
@@ -249,7 +173,7 @@ export default function Navbar({ auth }) {
       </div>
 
       {/* Request Event Modal */}
-      {showRequestModal && user && (
+      {showRequestModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div 
             ref={modalRef}
@@ -277,9 +201,8 @@ export default function Navbar({ auth }) {
                     name="nama"
                     value={requestForm.nama}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
                     required
-                    readOnly
                   />
                 </div>
                 

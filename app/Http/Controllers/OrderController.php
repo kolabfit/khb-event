@@ -10,10 +10,19 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use App\Services\QrisService;
+use Illuminate\Support\Facades\Storage;
 
 
 class OrderController extends Controller
 {
+    protected $qrisService;
+
+    public function __construct(QrisService $qrisService)
+    {
+        $this->qrisService = $qrisService;
+    }
+
     // Tampilkan halaman OrderPage
     public function create(Request $request)
     {
@@ -152,5 +161,32 @@ class OrderController extends Controller
         // $ticket->update(['status' => 'paid']);
 
         return redirect()->route('dashboard')->with('success', 'Bukti pembayaran berhasil diunggah.');
+    }
+
+    public function showPaymentConfirmation(Ticket $ticket)
+    {
+        // Hitung berapa peserta di transaksi ini
+        $quantity = $ticket->payment->tickets()->count();
+
+        // Ambil total dari Payment (atau: $ticket->price_paid * $quantity)
+        $totalPaid = $ticket->payment->amount;
+
+        // Ambil QRIS dari event tiket
+        $qris = $ticket->event->qrisSetting;
+
+        return Inertia::render('PaymentConfirmation', [
+            'ticket' => [
+                'id' => $ticket->id,
+                'event_title' => $ticket->event->title,
+                'quantity' => $quantity,
+                'price_paid' => $ticket->price_paid,
+                'total_paid' => $ticket->payment->amount,     
+                'price_per_ticket' => $ticket->price_paid,         // harga satu tiket
+            ],
+            'qris' => $qris ? [
+                'merchant_name' => $qris->merchant_name,
+                'qris_image_path' => Storage::url($qris->qris_image_path),
+            ] : null,
+        ]);
     }
 }

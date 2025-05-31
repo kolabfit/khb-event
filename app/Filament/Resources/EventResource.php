@@ -12,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form as FilamentForm;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
@@ -136,6 +137,12 @@ class EventResource extends Resource
                     ->label('Kategori')
                     ->helperText('Pilih kategori yang sudah ditambahkan sebelumnya.')
                     ->relationship('categories', 'name'),
+
+                Select::make('qris_setting_id')
+                    ->label('Pilihan QRIS')
+                    ->relationship('qrisSetting', 'merchant_name')
+                    ->nullable()
+                    ->placeholder('Pilih Pengaturan QRIS'),
             ]);
     }
 

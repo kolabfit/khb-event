@@ -1,21 +1,22 @@
 import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
-import Navbar from '@/components/Navbar';
 import EventPage from '@/components/EventPage';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import GuestLayout from '@/Layouts/GuestLayout';
+import Navbar from '@/components/Navbar';
 import { Head } from '@inertiajs/react';
 
-export default function Dashboard({ dataevent, category }) {
+export default function DashboardUser({ auth, dataevent, category }) {
     return (
-        <
-        >
+        <>
             <Head title="Dashboard" />
-
             <div className="min-h-screen bg-gray-50">
-                <Navbar />
+                <Navbar auth={auth} />
                 <HeroSection />
-                {/* <Timer /> */}
-                <EventPage dataevent={dataevent} categories={category} />
+                <EventPage 
+                    dataevent={dataevent} 
+                    categories={category} 
+                    events={dataevent?.data || []} 
+                />
                 <Footer />
             </div>
         </>
