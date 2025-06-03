@@ -26,6 +26,10 @@ const EventCards = ({ dataevent = [] }) => {
             })
             : 'Gratis';
 
+        const eventStartDate = new Date(event.start_date);
+        const now = new Date();
+        const isPastEvent = eventStartDate < now;
+
         return (
           <Link
             href={route('detail-events', { id: event.id })}
@@ -41,6 +45,11 @@ const EventCards = ({ dataevent = [] }) => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+                {isPastEvent && (
+                  <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
+                    Event Telah Berakhir
+                  </div>
+                )}
               </div>
 
               {/* Konten */}

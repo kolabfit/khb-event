@@ -40,41 +40,66 @@ export default function EventPage({ dataevent, categories = [], events = [], sel
   };
 
   const filteredEvents = useMemo(() => {
-    // Debug dataevent
+    // Debug props
+    console.log('useMemo states:', { priceFilter, showRecentOnly, sortOrder, selectedCategory });
     console.log('Filtering events:', dataevent);
 
-    // Ensure we're working with an array
-    let filtered = Array.isArray(dataevent) ? [...dataevent] : 
-                  (dataevent?.data ? [...dataevent.data] : []);
+    // Ensure we're working with an array and clone it
+    let filtered = Array.isArray(dataevent?.data) ? [...dataevent.data] : (Array.isArray(dataevent) ? [...dataevent] : []);
 
-    console.log('Filtered events before processing:', filtered);
+    console.log('Filtered events before processing:', filtered.length);
 
+    // Filter out past events (keep only upcoming or today's events)
+    const now = new Date();
+    const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Compare only date part
+
+    filtered = filtered.filter(event => {
+        if (!event.start_date) return false; // Exclude if start_date is missing
+        const eventStartDate = new Date(event.start_date);
+        if (isNaN(eventStartDate.getTime())) return false; // Exclude if start_date is invalid
+
+        const eventStartDateOnly = new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), eventStartDate.getDate());
+
+        return eventStartDateOnly >= nowOnly; // Keep event if start date is today or in the future
+    });
+     console.log('Filtered events after removing past events:', filtered.length);
+
+    // Price Filtering
     if (priceFilter === 'free') {
-      filtered = filtered.filter(event => event.price === 0 || event.price === '0' || event.price === 'Gratis');
+      filtered = filtered.filter(event => !event.is_paid);
     } else if (priceFilter === 'paid') {
-      filtered = filtered.filter(event => (event.price !== null && event.price !== undefined && event.price !== 'Gratis' && Number(event.price) > 0));
+      filtered = filtered.filter(event => !!event.is_paid);
     }
+    console.log('Filtered events after price filter:', filtered.length);
 
+    // Recent Filtering
     if (showRecentOnly) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      filtered = filtered.filter(event => { 
-        // Ensure event.date is a valid date string before creating Date object
-        const eventDate = new Date(event.date);
-        return !isNaN(eventDate.getTime()) && eventDate >= oneWeekAgo; // Use getTime() to check validity
+      filtered = filtered.filter(event => {
+        // Ensure event.created_at is a valid date string before creating Date object
+        // Also handle cases where event.created_at might be null or undefined
+        if (!event.created_at) return false; // Exclude if created_at is missing
+        const eventCreationDate = new Date(event.created_at);
+        return !isNaN(eventCreationDate.getTime()) && eventCreationDate >= oneWeekAgo; // Check validity and compare created_at with one week ago
       });
     }
+    console.log('Filtered events after recent filter:', filtered.length);
+
 
     // Filter by selected category if provided
     if (selectedCategory) {
-        filtered = filtered.filter(event => 
-            event.category && event.category.name === selectedCategory
+        filtered = filtered.filter(event =>
+            event.category?.name === selectedCategory // Use optional chaining for safer access
         );
     }
+    console.log('Filtered events after category filter:', filtered.length);
 
+
+    // Sorting
     filtered.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
+      const dateA = new Date(a.start_date);
+      const dateB = new Date(b.start_date);
       // Handle invalid dates during sorting - compare valid dates, put invalid at the end
       const timeA = dateA.getTime();
       const timeB = dateB.getTime();
@@ -83,12 +108,13 @@ export default function EventPage({ dataevent, categories = [], events = [], sel
       if (isNaN(timeA)) return 1; // a is invalid, put at end
       if (isNaN(timeB)) return -1; // b is invalid, put at end
 
-      return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
+      // Sort 'newest' (terdekat) by start_date ascending (timeA - timeB)
+      return sortOrder === 'newest' ? timeA - timeB : timeB - timeA;
     });
 
-    console.log('Filtered events after processing:', filtered);
+    console.log('Filtered events after processing:', filtered.length);
     return filtered;
-  }, [dataevent, priceFilter, showRecentOnly, sortOrder, selectedCategory]);
+  }, [dataevent, priceFilter, showRecentOnly, sortOrder, selectedCategory]); // Dependency array looks correct
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -247,7 +273,7 @@ export default function EventPage({ dataevent, categories = [], events = [], sel
       {/* Event Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7">
         <EventCards 
-          dataevent={filteredEvents.slice(0, 8)}
+          dataevent={filteredEvents}
         />
       </div>
 

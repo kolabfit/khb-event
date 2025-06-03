@@ -142,7 +142,9 @@ class EventResource extends Resource
                     ->label('Pilihan QRIS')
                     ->relationship('qrisSetting', 'merchant_name')
                     ->nullable()
-                    ->placeholder('Pilih Pengaturan QRIS'),
+                    ->placeholder('Pilih Pengaturan QRIS')
+                    ->visible(fn($get) => $get('is_paid'))
+                    ->required(fn($get) => $get('is_paid')),
             ]);
     }
 

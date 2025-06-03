@@ -18,6 +18,11 @@ export default function EventDetailPage({ event, auth }) {
               })
             : "Gratis";
 
+    // Check if event has ended
+    const now = new Date();
+    const eventEndDate = event.end_date ? new Date(event.end_date) : (event.start_date ? new Date(event.start_date) : null);
+    const isEventEnded = eventEndDate ? eventEndDate < now : false;
+
     return (
         <>
             <Navbar auth={auth} />
@@ -159,18 +164,20 @@ export default function EventDetailPage({ event, auth }) {
                                 {auth.user ? (
                                     <Link
                                         as="button"
-                                        href={route('order-event.order', { id: event.id })}
-                                        className="ml-2 px-4 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition"
+                                        href={isEventEnded ? null : route('order-event.order', { id: event.id })}
+                                        disabled={isEventEnded}
+                                        className={`ml-2 px-4 py-1 text-sm rounded-md transition ${isEventEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'}`}
                                     >
-                                        Pesan
+                                        {isEventEnded ? 'Event Telah Berakhir' : 'Pesan'}
                                     </Link>
                                 ) : (
                                     <Link
                                         as="button"
-                                        href={route('login', { redirect: window.location.pathname + window.location.search })}
-                                        className="ml-2 px-4 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition"
+                                        href={isEventEnded ? null : route('login', { redirect: window.location.pathname + window.location.search })}
+                                        disabled={isEventEnded}
+                                        className={`ml-2 px-4 py-1 text-sm rounded-md transition ${isEventEnded ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                                     >
-                                        Login untuk Pesan Tiket
+                                        {isEventEnded ? 'Event Telah Berakhir' : 'Login untuk Pesan Tiket'}
                                     </Link>
                                 )}
                             </div>
@@ -183,20 +190,26 @@ export default function EventDetailPage({ event, auth }) {
                             </p>
                             <div className="flex space-x-3">
                                 <a
-                                    href="#"
+                                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
                                     className="text-blue-600 hover:text-blue-800"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
                                     Facebook
                                 </a>
                                 <a
-                                    href="#"
+                                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('Check out this event: ' + event.title)}`}
                                     className="text-blue-400 hover:text-blue-600"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
                                     Twitter
                                 </a>
                                 <a
-                                    href="#"
+                                    href={`https://www.instagram.com/share?url=${encodeURIComponent(window.location.href)}`}
                                     className="text-pink-500 hover:text-pink-700"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
                                     Instagram
                                 </a>
