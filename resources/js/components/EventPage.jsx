@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import {
-  ChevronLeft,
-  ChevronRight,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   Filter,
   SortDesc,
   Clock
@@ -10,7 +10,7 @@ import DynamicHeroIcon from '@/components/DynamicHeroIcon';
 import { Link } from '@inertiajs/react';
 import EventCards from '@/components/EventCard';
 
-export default function EventPage({ dataevent, categories = [], events = [] }) {
+export default function EventPage({ dataevent, categories = [], events = [], selectedCategory = null }) {
   const [priceFilter, setPriceFilter] = useState('all'); // 'all', 'free', 'paid'
   const [showRecentOnly, setShowRecentOnly] = useState(false);
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest', 'oldest'
@@ -22,16 +22,21 @@ export default function EventPage({ dataevent, categories = [], events = [] }) {
     console.log('EventPage Props:', {
       dataevent,
       categories,
-      events
+      events,
+      selectedCategory
     });
-  }, [dataevent, categories, events]);
+  }, [dataevent, categories, events, selectedCategory]);
 
   const scrollLeft = () => {
-    scrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+    if (scrollRef.current) {
+        scrollRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
   };
 
   const scrollRight = () => {
-    scrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+    if (scrollRef.current) {
+        scrollRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+    }
   };
 
   const filteredEvents = useMemo(() => {
@@ -47,31 +52,50 @@ export default function EventPage({ dataevent, categories = [], events = [] }) {
     if (priceFilter === 'free') {
       filtered = filtered.filter(event => event.price === 0 || event.price === '0' || event.price === 'Gratis');
     } else if (priceFilter === 'paid') {
-      filtered = filtered.filter(event => event.price > 0 && event.price !== 'Gratis');
+      filtered = filtered.filter(event => (event.price !== null && event.price !== undefined && event.price !== 'Gratis' && Number(event.price) > 0));
     }
 
     if (showRecentOnly) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      filtered = filtered.filter(event => new Date(event.date) >= oneWeekAgo);
+      filtered = filtered.filter(event => { 
+        // Ensure event.date is a valid date string before creating Date object
+        const eventDate = new Date(event.date);
+        return !isNaN(eventDate.getTime()) && eventDate >= oneWeekAgo; // Use getTime() to check validity
+      });
+    }
+
+    // Filter by selected category if provided
+    if (selectedCategory) {
+        filtered = filtered.filter(event => 
+            event.category && event.category.name === selectedCategory
+        );
     }
 
     filtered.sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      // Handle invalid dates during sorting - compare valid dates, put invalid at the end
+      const timeA = dateA.getTime();
+      const timeB = dateB.getTime();
+
+      if (isNaN(timeA) && isNaN(timeB)) return 0; // Both invalid, keep original order
+      if (isNaN(timeA)) return 1; // a is invalid, put at end
+      if (isNaN(timeB)) return -1; // b is invalid, put at end
+
+      return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
     });
 
     console.log('Filtered events after processing:', filtered);
     return filtered;
-  }, [dataevent, priceFilter, showRecentOnly, sortOrder]);
+  }, [dataevent, priceFilter, showRecentOnly, sortOrder, selectedCategory]);
 
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Event Populer Section */}
       <div className="mb-10">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Event Populer</h2>
+          <h2 className="text-xl font-bold">{selectedCategory ? `${selectedCategory} Events` : 'Event Populer'}</h2>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -153,53 +177,77 @@ export default function EventPage({ dataevent, categories = [], events = [] }) {
           </div>
         )}
 
-        {/* Scrollable Categories */}
-        <div className="relative">
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md p-2 rounded-full hover:bg-purple-100"
-          >
-            <ChevronLeft className="w-5 h-5 text-purple-600" />
-          </button>
+        {/* Kategori Filter - Desktop & Mobile Scrollable */}
+        <div className="relative mb-6">
+            {/* Tombol Panah Kiri */}
+            <button
+                onClick={scrollLeft}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md p-2 rounded-full hover:bg-purple-100"
+            >
+                <ChevronLeftIcon className="w-5 h-5 text-purple-600" />
+            </button>
 
-          <div
-            ref={scrollRef}
-            className="flex overflow-x-auto no-scrollbar px-10 py-4 space-x-20"
-          >
-            {categories.map((category, index) => (
-              <Link
-                key={index}
-                href={route('events', { category: category.name })}
-                className="flex flex-col items-center cursor-pointer group min-w-fit"
-              >
-                <div className="rounded-full bg-gray-100 p-4 mb-2 group-hover:bg-gray-200 transition-colors">
-                  <DynamicHeroIcon
-                    iconString={category.icon ?? ""}
-                    className="h-6 w-6 text-purple-600 group-hover:text-purple-800 transition-colors"
-                  />
-                </div>
-                <span className="text-xs group-hover:font-medium transition-all text-center whitespace-nowrap">
-                  {category.name}
-                </span>
-              </Link>
-            ))}
-          </div>
+            <div
+                ref={scrollRef}
+                className="flex overflow-x-auto no-scrollbar px-10 py-4 space-x-4 md:space-x-16"
+            >
+                {/* Tombol "All"
+                <Link
+                    href={route('events')}
+                    className={`flex flex-col items-center cursor-pointer group flex-shrink-0 w-[60px] ${
+                        !selectedCategory ? 'opacity-100' : 'opacity-70'
+                    }`}
+                >
+                    <div className={`rounded-full p-3 mb-2 transition-colors ${
+                        !selectedCategory ? 'bg-purple-600' : 'bg-gray-100'
+                    }`}>
+                        <DynamicHeroIcon
+                            iconString="Squares2X2"
+                            className={`h-5 w-5 ${
+                                !selectedCategory ? 'text-white' : 'text-purple-600'
+                            }`}
+                        />
+                    </div>
+                    <span className="text-xs text-center whitespace-nowrap">All</span>
+                </Link> */}
 
-          <button
-            onClick={scrollRight}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md p-2 rounded-full hover:bg-purple-100"
-          >
-            <ChevronRight className="w-5 h-5 text-purple-600" />
-          </button>
+                {categories.map((cat) => (
+                    <Link
+                        key={cat.id}
+                        href={route('events', { category: cat.name })}
+                        className={`flex flex-col items-center cursor-pointer group flex-shrink-0 w-[60px] ${
+                            selectedCategory === cat.name ? 'opacity-100' : 'opacity-70'
+                        }`}
+                    >
+                        <div className={`rounded-full p-3 mb-2 transition-colors ${
+                            selectedCategory === cat.name ? 'bg-purple-600' : 'bg-gray-100'
+                        }`}>
+                            <DynamicHeroIcon
+                                iconString={cat.icon || ''}
+                                className={`h-5 w-5 ${
+                                    selectedCategory === cat.name ? 'text-white' : 'text-purple-600'
+                                }`}
+                            />
+                        </div>
+                        <span className="text-xs text-center whitespace-nowrap">{cat.name}</span>
+                    </Link>
+                ))}
+            </div>
+
+            {/* Tombol Panah Kanan */}
+            <button
+                onClick={scrollRight}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-md p-2 rounded-full hover:bg-purple-100"
+            >
+                <ChevronRightIcon className="w-5 h-5 text-purple-600" />
+            </button>
         </div>
       </div>
 
       {/* Event Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-7">
         <EventCards 
-          dataevent={filteredEvents} 
-          catevent={events} 
-          dataevents={filteredEvents.slice(0, 8)} 
+          dataevent={filteredEvents.slice(0, 8)}
         />
       </div>
 

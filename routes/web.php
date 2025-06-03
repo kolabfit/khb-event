@@ -71,7 +71,7 @@ Route::get('/filament/reports/export', [ReportExportController::class, 'export']
 Route::get('/dashboard', function () {
     $data = Event::all()->load('user');
     $category = Category::all();
-    return Inertia::render('Dashboard')->with(
+    return Inertia::render(auth()->check() ? 'DashboardUser' : 'Dashboard')->with(
         [
             'dataevent' => $data,
             'category' => $category,

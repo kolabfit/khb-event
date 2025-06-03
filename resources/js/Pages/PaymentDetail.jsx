@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
+import Navbar from '@/components/Navbar';
 import Footer from '@/Components/Footer'; 
 
 function statusLabel(status) {
@@ -47,21 +47,21 @@ export default function PaymentDetail({ auth, payment }) {
                     <div className="flex justify-between items-center mb-4">
                         <button
                             onClick={() => window.history.back()}
-                            className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 transition"
+                            className="px-3 py-1 sm:px-4 sm:py-2 rounded bg-purple-600 text-white hover:bg-purple-700 transition text-sm"
                         >
                             &larr; Kembali
                         </button>
                         
                         <a
                             href={route('user.payments.download', { payment: payment.id })}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 transition"
+                            className="inline-flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 rounded bg-purple-600 text-white hover:bg-purple-700 transition text-sm"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
                             </svg>
-                            Download Detail Pembayaran
+                            Download
                         </a>
                     </div>
                     {/* Gambar event */}

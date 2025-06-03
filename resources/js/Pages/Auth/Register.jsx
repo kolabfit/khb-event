@@ -31,7 +31,7 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="w-full max-w-md mx-auto p-4 sm:p-6">
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
@@ -39,7 +39,7 @@ export default function Register() {
                         id="name"
                         name="name"
                         value={data.name}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         autoComplete="name"
                         isFocused={true}
                         onChange={(e) => setData('name', e.target.value)}
@@ -57,7 +57,7 @@ export default function Register() {
                         type="email"
                         name="email"
                         value={data.email}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         autoComplete="username"
                         onChange={(e) => setData('email', e.target.value)}
                         required
@@ -74,7 +74,7 @@ export default function Register() {
                         type="text"
                         name="phone"
                         value={data.phone}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         autoComplete="tel"
                         onChange={(e) => setData('phone', e.target.value)}
                         required
@@ -91,7 +91,7 @@ export default function Register() {
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         autoComplete="new-password"
                         onChange={(e) => setData('password', e.target.value)}
                         required
@@ -108,7 +108,7 @@ export default function Register() {
                         type="password"
                         name="password_confirmation"
                         value={data.password_confirmation}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         autoComplete="new-password"
                         onChange={(e) => setData('password_confirmation', e.target.value)}
                         required
@@ -117,15 +117,15 @@ export default function Register() {
                     <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>
 
-                <div className="flex items-center justify-end mt-4">
+                <div className="flex flex-col sm:flex-row items-center justify-end mt-6 space-y-3 sm:space-y-0 sm:space-x-4">
                     <Link
                         href={route('login')}
-                        className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="w-full sm:w-auto text-center underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                         Already registered?
                     </Link>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <PrimaryButton className="w-full sm:w-auto" disabled={processing}>
                         Register
                     </PrimaryButton>
                 </div>

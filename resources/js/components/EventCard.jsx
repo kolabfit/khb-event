@@ -5,7 +5,7 @@ import { Link } from '@inertiajs/react';
 const EventCards = ({ dataevent = [] }) => {
   if (!dataevent || dataevent.length === 0) {
     return (
-      <div className="col-span-4 text-center py-8 text-gray-500">
+      <div className="col-span-full text-center py-8 text-gray-500">
         Tidak ada event yang tersedia
       </div>
     );
@@ -30,53 +30,54 @@ const EventCards = ({ dataevent = [] }) => {
           <Link
             href={route('detail-events', { id: event.id })}
             key={event.id}
+            className="block h-full"
           >
-            <div className="group cursor-pointer shadow-md transition-shadow rounded-lg bg-white overflow-hidden">
+            <div className="group cursor-pointer shadow-md transition-shadow rounded-lg bg-white overflow-hidden h-full flex flex-col">
               {/* Gambar */}
-              <div className="relative">
+              <div className="relative aspect-[4/3]">
                 <img
                   src={event.thumbnail}
                   alt={event.title}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
               </div>
 
               {/* Konten */}
-              <div className="p-4 flex flex-col">
-                <div className="self-start inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full mb-2">
+              <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                <div className="self-start inline-block bg-green-100 text-green-800 text-xs px-2 sm:px-3 py-1 rounded-full mb-2">
                   {new Date(event.start_date).toLocaleDateString('id-ID', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric',
                   })}
                 </div>
-                <h3 className="font-bold text-base leading-tight group-hover:text-green-600 transition-colors">
+                <h3 className="font-bold text-sm sm:text-base leading-tight group-hover:text-green-600 transition-colors line-clamp-2">
                   {event.title}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">{event.location}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-1">{event.location}</p>
 
                 {/* Harga / Gratis */}
-                <p className="text-lg font-semibold text-gray-800 mt-1 mb-2">
+                <p className="text-base sm:text-lg font-semibold text-gray-800 mt-1 mb-2">
                   {priceLabel}
                 </p>
 
-                <div className="my-3 border-t border-gray-200" />
+                <div className="my-2 sm:my-3 border-t border-gray-200" />
 
                 {/* Organizer */}
-                <div className="flex items-center justify-between mt-2 mb-2">
+                <div className="flex items-center justify-between mt-auto">
                   <div className="flex items-center">
                     <img
                       src={event.user?.avatar}
                       alt={event.user?.name}
-                      className="w-7 h-7 rounded-full object-cover"
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover"
                     />
-                    <span className="ml-2 text-sm text-gray-700">
+                    <span className="ml-2 text-xs sm:text-sm text-gray-700 truncate max-w-[120px] sm:max-w-[150px]">
                       {event.user?.name}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500">
-                    Dibuat {new Date(event.created_at).toLocaleDateString('id-ID', {
+                  <span className="text-xs sm:text-sm text-gray-500 hidden sm:block">
+                    {new Date(event.created_at).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric'

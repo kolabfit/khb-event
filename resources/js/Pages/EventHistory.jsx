@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import Footer from '@/Components/Footer';
 
 export default function EventHistory({ auth, payments }) {
     payments = payments ?? [];
@@ -116,18 +116,18 @@ export default function EventHistory({ auth, payments }) {
                                             payment.status === 'paid'
                                                 ? 'text-green-600'
                                                 : payment.status === 'pending' && !payment.receipt_path
-                                                ? 'text-yellow-600'
-                                                : payment.status === 'pending' && payment.receipt_path
-                                                ? 'text-blue-600'
-                                                : 'text-red-600'
+                                                    ? 'text-yellow-600'
+                                                    : payment.status === 'pending' && payment.receipt_path
+                                                        ? 'text-blue-600'
+                                                        : 'text-red-600'
                                         }>
                                             {payment.status === 'pending' && !payment.receipt_path
                                                 ? 'Upload Bukti Pembayaran'
                                                 : payment.status === 'pending' && payment.receipt_path
-                                                ? 'Menunggu Konfirmasi Admin'
-                                                : payment.status === 'paid'
-                                                ? 'Lunas'
-                                                : 'Gagal'}
+                                                    ? 'Menunggu Konfirmasi Admin'
+                                                    : payment.status === 'paid'
+                                                        ? 'Lunas'
+                                                        : 'Gagal'}
                                         </span>
                                     </p>
                                     <div className="mt-2 flex justify-between items-center">
@@ -144,7 +144,10 @@ export default function EventHistory({ auth, payments }) {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    onClick={() => openModal(payment)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openModal(payment);
+                                                    }}
                                                     className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                                                 >
                                                     Upload Bukti
@@ -183,7 +186,7 @@ export default function EventHistory({ auth, payments }) {
 
                         <div className="flex justify-center mb-4">
                             <img
-                                src="/images/static-qr.jpeg"
+                                src={selectedPayment?.qr_code_url || '/images/static-qr.jpeg'}
                                 alt="Kode QRIS"
                                 className="w-64 h-64 object-contain"
                             />

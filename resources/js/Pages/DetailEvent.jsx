@@ -3,7 +3,7 @@ import React from "react";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Link } from "@inertiajs/react";
-import Footer from "@/components/Footer";
+import Footer from "@/Components/Footer";
 
 export default function EventDetailPage({ event, auth }) {
     // Hitung harga mentah, default ke 0 bila null

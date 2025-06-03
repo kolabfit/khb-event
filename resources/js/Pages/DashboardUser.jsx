@@ -1,9 +1,9 @@
-import Footer from '@/components/Footer';
-import HeroSection from '@/components/HeroSection';
-import EventPage from '@/components/EventPage';
-import GuestLayout from '@/Layouts/GuestLayout';
-import Navbar from '@/components/Navbar';
 import { Head } from '@inertiajs/react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/Components/Footer';
+import HeroSection from '@/Components/HeroSection';
+import EventPage from '@/Components/EventPage';
+import GuestLayout from '@/Layouts/GuestLayout';
 
 export default function DashboardUser({ auth, dataevent, category }) {
     return (

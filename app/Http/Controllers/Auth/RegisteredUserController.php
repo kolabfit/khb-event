@@ -64,7 +64,7 @@ class RegisteredUserController extends Controller
         if ($user->hasRole('admin')) {
             return redirect()->route('filament.admin.pages.dashboard');
         } else {
-            return redirect()->route('user.dashboard');
+            return redirect()->route('dashboard');
         }
     }
 }

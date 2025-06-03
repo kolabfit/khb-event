@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import Footer from '@/Components/Footer';
 import { Inertia } from '@inertiajs/inertia';
 import { Calendar, MapPin, Clock } from 'lucide-react'; // Import icons
 
